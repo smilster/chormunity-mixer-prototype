@@ -1,0 +1,362 @@
+/** {*/
+/*    border: 1px solid white; !important;*/
+/*}*/
+
+/* ==========================================
+   COLOR VARIABLES
+   ========================================== */
+:root {
+    --color-blue: #4facfe;
+    --color-green: #00ff88;
+    --color-yellow: #fff346;
+    --color-red: #ff006a;
+    --color-white: #ffffff;
+    --color-bright: #d5d5d5;
+    --color-gray: #666666;
+    --color-dark-gray: #2b2b2b;
+    --color-dark: #0c0c0c;
+
+    --bar-width: 8px;
+}
+
+/* Font colors */
+.blue {
+    color: var(--color-blue);
+}
+
+.green {
+    color: var(--color-green);
+}
+.red {
+    color: var(--color-red);
+}
+
+.white {
+    color: var(--color-white);
+}
+
+.bright {
+    color: var(--color-bright);
+}
+
+.gray {
+    color: var(--color-gray);
+}
+
+.dark-gray {
+    color: var(--color-dark-gray);
+}
+
+.darkgray {
+    color: var(--color-dark);
+}
+
+/* Background colors */
+.bg-blue {
+    background-color: var(--color-blue);
+}
+
+.bg-green {
+    background-color: var(--color-green);
+}
+
+.bg-red {
+    background-color: var(--color-red);
+}
+
+.bg-white {
+    background-color: var(--color-white);
+}
+
+.bg-bright {
+    background-color: var(--color-bright);
+}
+
+.bg-gray {
+    background-color: var(--color-gray);
+}
+
+.bg-dark-gray {
+    background-color: var(--color-dark-gray);
+}
+
+.bg-dark {
+    background-color: var(--color-dark);
+}
+
+/* SHADOWS*/
+.shadow-red {
+    box-shadow: 0 0 5px var(--color-red);
+}
+
+.shadow-blue {
+    box-shadow: 0 0 5px var(--color-blue);
+}
+
+.shadow-green {
+    box-shadow: 0 0 5px var(--color-green);
+}
+
+.shadow-bright {
+    box-shadow: 0 0 5px var(--color-bright);
+}
+
+
+
+
+/* LAYOUTS*/
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #0c0c0c;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    /*align-items: center;*/
+    /*justify-content: center;*/
+}
+
+
+
+
+
+/* M I X E R*/
+
+
+
+.mixer {
+
+    background: #181818;
+    padding: 20px;
+    margin: 30px;
+    width: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+
+.mixer-channel {
+    background: #222;
+    padding: 10px;
+    width: 110px;
+    height: 310px;
+    gap: 15px;
+    box-sizing: border-box;
+}
+
+.pan-slider {
+    margin: 0 auto;
+    appearance: none;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.volume-slider {
+    margin: 0 auto;
+    appearance: none;
+    z-index: 10;
+}
+
+/* Chrome, Safari, Edge, and Opera */
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: 2px solid var(--color-dark);
+    width: 36px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--color-bright);
+    cursor: pointer;
+}
+
+/* Firefox */
+.volume-slider::-moz-range-thumb {
+    border: 2px solid var(--color-dark);
+    width: 36px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--color-bright);
+    cursor: pointer;
+}
+
+.volume-slider::-ms-thumb {
+    border: 2px solid var(--color-dark);
+    width: 36px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--color-bright);
+    cursor: pointer;
+}
+
+.full-meter {
+    margin: 0 auto;
+    appearance: none;
+    z-index: 10;
+}
+
+.meter {
+    transform-origin: bottom;
+    transform: scaleY(0.0);
+    transition: transform 0.05s ease-out, background-color 0.05s linear;
+    /* Cross-browser hardware acceleration */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.progress-bar {
+    transform-origin: bottom;
+    transform: scaleY(0);
+    transition: transform 0.25s ease-in-out, background-color 0.1s linear;
+    /* Cross-browser hardware acceleration */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/*.progress-bar.bg-green {*/
+/*    box-shadow: 0 0 5px var(--color-green);*/
+/*}*/
+
+/*.progress-bar.bg-bright {*/
+/*    box-shadow: 0 0 5px var(--color-bright);*/
+/*}*/
+
+/*.progress-bar.bg-blue {*/
+/*    box-shadow: 0 0 5px var(--color-blue);*/
+/*}*/
+
+/* T I M E L I N E*/
+.timeline {
+    cursor: pointer;
+    position: relative; /* Crucial so absolute children (marker, region) stay inside */
+    overflow: hidden;   /* Keeps the selection region from spilling out horizontally */
+}
+
+.timeline-display {
+    position: fixed;      /* Follows viewport coordinates perfectly */
+    display: none;
+    pointer-events: none; /* Tooltip doesn't block mouse */
+    transform: translate(-50%, -100%); /* Centers tooltip horizontally above the cursor */
+    z-index: 10;          /* Keeps tooltip on top of everything */
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: left 0.05s ease-out;
+    z-index: 5;           /* Sits above the selection region, below the tooltip */
+}
+
+/* Styles for the drag-selection block */
+.timeline-region {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;           /* Sits behind the playhead marker */
+}
+
+/* G E N E R A L   H E L P E R S*/
+
+.round {
+    border-radius: 12px;
+}
+
+.round-sm {
+    border-radius: 6px;
+}
+
+.border {
+    border: 1px solid #333;
+}
+
+.btn {
+    cursor: pointer;
+}
+
+.invertY {
+    transform: scaleY(-1);
+}
+
+.bar.vertical {
+    width: var(--bar-width);
+    writing-mode: vertical-lr;
+    box-sizing: border-box;
+    margin: 0px 15px;
+}
+
+.bar {
+    height: var(--bar-width);
+    box-sizing: border-box;
+    margin: 10px 0;
+}
+
+.label {
+    /*padding: 10px;*/
+    margin: 0;
+    font-size: 11px;
+    font-weight: 900;
+
+}
+
+.label.small {
+    padding: 5px;
+    font-size: 9px;
+}
+
+.label.large {
+    padding: 8px;
+    font-size: 14px;
+}
+
+.color-transition {
+    transition: color 0.1s linear, background-color 0.1s linear;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+.h-20px {
+    height: 20px;
+}
+.h-50px {
+    height: 50px;
+}
+
+.h-150px {
+    height: 150px;
+}
+.h-180px {
+    height: 180px;
+}
+
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.center {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}

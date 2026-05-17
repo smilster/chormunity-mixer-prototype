@@ -1,0 +1,216 @@
+
+
+let mixer;
+let channelContents;
+let meters;
+
+const DB_MIN_VOLUME = -30;
+const DB_MAX_VOLUME = 6;
+const DB_RANGE_VOLUME = DB_MAX_VOLUME - DB_MIN_VOLUME;
+
+
+const DB_MIN_METER = -60;
+const DB_MAX_METER = 0;
+const DB_RANGE_METER = DB_MAX_METER - DB_MIN_METER;
+
+
+export function createMixer(parentDiv) {
+    mixer = document.createElement("div");
+    mixer.id = "mixer";
+    mixer.className = "mixer border round center";
+    parentDiv.appendChild(mixer);
+}
+export function initializeMixer(song) {
+    channelContents = [];
+    meters = [];
+    // clear mixer
+    mixer.innerHTML = '';
+
+
+    song.trackConfigs.forEach(trackConfig => {
+        const channel = document.createElement("div");
+        channel.id = 'channel-' + trackConfig.id;
+        channel.className = 'mixer-channel flex-column border round center';
+
+
+        const channelLabel = document.createElement("div");
+        channelLabel.id = 'channel-label-' + trackConfig.id;
+        channelLabel.className = 'label blue';
+        channelLabel.innerHTML = trackConfig.label;
+
+
+        const channelContent = document.createElement("div");
+        channelContent.id = 'channel-content-' + trackConfig.id;
+        channelContent.className = 'flex-grow flex-column center w-100';
+
+        // build
+        channel.appendChild(channelLabel);
+        channel.appendChild(channelContent);
+
+        mixer.appendChild(channel);
+
+        // save for layer filling, i.e., progress bar and channel controls
+        channelContents.push(channelContent);
+    });
+    return channelContents;
+}
+//
+export function createTrackControls(song) {
+    channelContents.forEach((channelContent,id) => {
+        channelContent.innerHTML = '';
+
+
+        const gapOne = document.createElement("div");
+        gapOne.className = 'flex-grow';
+        const gapTwo = document.createElement("div");
+        gapTwo.className = 'flex-grow'
+
+
+        channelContent.appendChild(createPanControl(song.tracks[id]));
+        channelContent.appendChild(gapOne);
+        channelContent.appendChild(createVolumeControl(song.tracks[id]));
+
+        channelContent.appendChild(gapTwo);
+        channelContent.appendChild(createMuteButton(song.tracks[id]));
+
+    })
+
+}
+
+function createPanControl(track) {
+    const panControl = document.createElement("div");
+    panControl.className = 'center';
+
+    // const panLabel = document.createElement("div");
+    // panLabel.className = 'center label small gray';
+    // panLabel.innerHTML = "pan";
+
+    const panSlider = document.createElement("input")
+    panSlider.type = 'range'
+    panSlider.className = 'pan-slider bar w-100 bg-dark round border';
+
+    panSlider.step = '0.01';
+    panSlider.min = '-1';
+    panSlider.max = '1';
+    panSlider.value = track.panner.pan.value.toString();
+    panSlider.addEventListener('input', (event) => {
+        panSlider.onchange = (event) => {
+            track.pan = event.target.value;
+            track.panner.pan.rampTo(parseFloat(event.target.value),0.03);
+        }
+    })
+
+
+    // panControl.appendChild(panLabel);
+    panControl.appendChild(panSlider);
+
+    return panControl;
+}
+
+
+function createVolumeControl(track) {
+    const volumeControl = document.createElement("div");
+    volumeControl.className = 'center flex-grow';
+
+    // const volumeLabel = document.createElement("div");
+    // volumeLabel.className = 'center label small gray'
+    // volumeLabel.innerHTML = 'volume';
+
+    const sliderMeterWrapper = document.createElement("div");
+    sliderMeterWrapper.className = 'flex-row flex-grow'
+
+    const volumeSlider = document.createElement("input")
+    volumeSlider.type = 'range'
+    volumeSlider.className = 'volume-slider bar vertical invertY bg-dark round border h-180px';
+
+    volumeSlider.step = '0.01';
+    volumeSlider.max = DB_MAX_VOLUME.toString();
+    volumeSlider.min = DB_MIN_VOLUME.toString();
+    volumeSlider.value = track.volume.volume.value.toString();
+    volumeSlider.addEventListener('input', (event) => {
+
+        let newVol = event.target.value
+        newVol = newVol < (DB_MIN_VOLUME + 2) ? -100.0 : newVol;
+        track.vol = newVol;
+        if (!track.volume.mute){
+            track.volume.volume.rampTo(parseFloat(newVol),0.03);
+        }
+    })
+
+
+
+    const fullMeter = document.createElement("div");
+    fullMeter.className = 'full-meter bar vertical bg-dark round border h-180px';
+
+    const meter  =document.createElement('div');
+    meter.className = 'meter w-100 h-100 round ';
+    meter.style.backgroundColor = "var(--color-green)"
+    meters[track.id] = meter;
+
+
+    // volumeControl.appendChild(volumeLabel);
+
+    sliderMeterWrapper.appendChild(volumeSlider);
+
+    fullMeter.appendChild(meter);
+    sliderMeterWrapper.appendChild(fullMeter);
+
+    volumeControl.appendChild(sliderMeterWrapper);
+
+    return volumeControl;
+
+}
+
+function createMuteButton(track){
+    const muteButton = document.createElement("div");
+    muteButton.innerHTML = `mute`;
+    muteButton.className = 'label small btn bg-dark-gray gray round-sm color-transition w-100';
+    muteButton.onclick = () => {
+        if (track.volume.mute) {
+            track.volume.mute = false
+            track.volume.volume.rampTo(parseFloat(track.vol),0.03);
+            muteButton.classList.remove('bg-red');
+            muteButton.classList.add('bg-dark-gray');
+            muteButton.classList.remove('bright');
+            muteButton.classList.add('gray');
+        } else {
+            track.volume.mute = true;
+            muteButton.classList.remove('bg-dark-gray');
+            muteButton.classList.add('bg-red');
+            muteButton.classList.remove('gray');
+            muteButton.classList.add('bright');
+        }
+    }
+
+    if (track.volume.mute) {
+        track.volume.mute = false
+        muteButton.click();
+    }
+
+    return muteButton;
+}
+
+
+
+export function updateMeters(song){
+    song.tracks.forEach((track,id) => {
+        const db = track.meter.getValue();
+        const percentage = Math.pow(Math.max(Math.min( (db - DB_MIN_METER) / DB_RANGE_METER,1),0),0.5)
+        // console.log(percentage);
+        // console.log(meters)
+        if (meters[id]){
+            meters[id].style.transform = `scaleY(${percentage})`;
+            if (db < -12 ){
+                meters[id].style.backgroundColor = "var(--color-green)"
+            } else if (db < -6){
+                meters[id].style.backgroundColor = "var(--color-yellow)"
+            } else {
+                meters[id].style.backgroundColor = "var(--color-red)"
+            }
+        }
+    })
+}
+
+
+
+

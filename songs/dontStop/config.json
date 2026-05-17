@@ -1,0 +1,42 @@
+{
+  "title": "Don't Stop Me Now (Piano)",
+  "bpm": 110,
+  "tracks": [
+    {
+      "label": "Sopran",
+      "filename": "piano_session_Sopran.mp3",
+      "pan": -0.4
+    },
+    {
+      "label": "Alt",
+      "filename": "piano_session_Alt.mp3",
+      "pan": -0.2
+    },
+    {
+      "label": "Tenor",
+      "filename": "piano_session_Tenor.mp3",
+      "pan": 0.2
+    },
+    {
+      "label": "Bass",
+      "filename": "piano_session_Bass.mp3",
+      "pan": -0.4
+    },
+    {
+      "label": "Piano L",
+      "filename": "piano_session_PianoL.mp3",
+      "pan": -0.3
+    },
+    {
+      "label": "Piano R",
+      "filename": "piano_session_PianoR.mp3",
+      "pan": 0.3
+    },
+    {
+      "label": "Click",
+      "filename": "piano_session_click.mp3",
+      "pan": 0,
+      "mute": true
+    }
+  ]
+}
