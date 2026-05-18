@@ -1,7 +1,3 @@
-let wakeLock = null;
-
-
-
 const playButton = document.createElement("button");
 playButton.id = "main-play-btn";
 playButton.textContent = "▶ Play";
@@ -24,7 +20,6 @@ export async function togglePlayback() {
     if (Tone.getContext().state !== "running") {
         await Tone.start();
         console.log("Audio Context Started");
-        await requestWakeLock(); // Keeps the screen alive
     }
 
     // Toggle Transport state
@@ -46,24 +41,5 @@ export function transportStop() {
     playButton.textContent = "▶ Play";
     playButton.classList.remove("playing");
 }
-
-
-// Function to request the wake lock
-async function requestWakeLock() {
-    try {
-        // Request the screen wake lock
-        wakeLock = await navigator.wakeLock.request('screen');
-        console.log('Wake Lock is active! Screen will stay on.');
-
-        // Optional: Listen for when the lock is released (e.g., if the user minimizes the tab)
-        wakeLock.addEventListener('release', () => {
-            console.log('Wake Lock was released.');
-        });
-
-    } catch (err) {
-        console.error(`${err.name}, ${err.message}`);
-    }
-}
-
 
 
