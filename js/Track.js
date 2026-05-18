@@ -3,7 +3,7 @@ export class Track {
 
     constructor(trackConfig) {
 
-        this.id = trackConfig.id;
+        this.id = trackConfig.id; // identical with directory in songs-folder
 
 
         this.label = trackConfig.label;

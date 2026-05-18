@@ -74,7 +74,10 @@ export class Song {
         // Shallow copy the track to avoid mutating your raw JSON data
         const trackConfig = {...rawTrackConfig};
 
-        trackConfig.url = `${SONG_DATABASE_DIR}/${this.id}/${trackConfig.filename}`;
+        if (!trackConfig.url) {
+            trackConfig.url = `${SONG_DATABASE_DIR}/${this.id}/${trackConfig.filename}`;
+        }
+
 
         // Auto-generate track label from filename if missing
         if (!trackConfig.label && trackConfig.url) {
