@@ -41,5 +41,3 @@ export function transportStop() {
     playButton.textContent = "▶ Play";
     playButton.classList.remove("playing");
 }
-
-
