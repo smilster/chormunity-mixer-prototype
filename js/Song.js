@@ -24,14 +24,24 @@ export class Song {
 
         this.title = songConfig.title || songConfig.id;
         this.bpm = Number(songConfig.bpm)
+        if (songConfig.timeSignature) {
+            this.timeSignature = songConfig.timeSignature.split("/")
+        } else {
+            this.timeSignature = [4, 4];
+        }
 
-        this.numTracks=songConfig.tracks.length;
+        console.log(songConfig.timeSignature);
+        console.log(this.timeSignature)
+        this.startBar = songConfig.startBar;
+
 
         // Map and normalize the incoming tracks array
-        this.trackConfigs = (songConfig.tracks || []).map(trackConfig => this.normalizeTrack(trackConfig));
+        this.trackConfigs = songConfig.tracks;
 
-        // assign index to each track
+        // assign index, song id and database dir to each track
         this.trackConfigs.forEach((trackConfig,id) => {
+            trackConfig.songId = this.id;
+            trackConfig.song_database_dir = SONG_DATABASE_DIR;
             trackConfig.id = id;
         });
 
@@ -39,6 +49,8 @@ export class Song {
 
         this.tracks = []
         this.createTracks();
+
+        this.numTracks=songConfig.tracks.length;
 
 
 
@@ -57,7 +69,9 @@ export class Song {
      */
     static async fromSongDatabase(id) {
         const songConfigJson = `${SONG_DATABASE_DIR}/${id}/${SONG_CONFIG_JSON}`;
-        const response = await fetch(songConfigJson);
+        const response = await fetch(songConfigJson,{
+            cache: 'no-store',
+        });
         if (!response.ok) throw new Error(`Failed to fetch song from ${songConfigJson}`);
         const songConfig = await response.json();
         songConfig.id = id;
@@ -66,27 +80,7 @@ export class Song {
 
 
 
-    /**
-     * Internal helper to sanitize and fill missing track data
-     * @private
-     */
-    normalizeTrack(rawTrackConfig) {
-        // Shallow copy the track to avoid mutating your raw JSON data
-        const trackConfig = {...rawTrackConfig};
 
-        if (!trackConfig.url) {
-            trackConfig.url = `${SONG_DATABASE_DIR}/${this.id}/${trackConfig.filename}`;
-        }
-
-
-        // Auto-generate track label from filename if missing
-        if (!trackConfig.label && trackConfig.url) {
-            trackConfig.label = trackConfig.url.split("/").pop().split(".")[0];
-        }
-
-
-        return trackConfig;
-    }
 
     calculateMaxDuration(){
         this.duration = 0;
@@ -94,6 +88,7 @@ export class Song {
             this.duration = Math.max(track.buffer.duration,this.duration);
         })
     }
+
 
     connect(){
         this.tracks.forEach((track) => {

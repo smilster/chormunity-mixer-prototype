@@ -1,25 +1,22 @@
 import { songs}  from "./Song.js";
 import {selectSong} from "./main.js";
 
-let songSelector = null;
+export let songSelector = null;
 /**
  * Creates the initial empty select element, sets up its event listener,
  * and appends it to the container. Run this ONCE during initialization.
  */
 export function createSongSelector(parentDiv) {
-    // 1. Create the select element wrapper
     songSelector = document.createElement("select");
     songSelector.id = "song-select";
 
-    // 2. Append it to the container
-    parentDiv.appendChild(songSelector);
-
-    // 3. Attach the event listener
     songSelector.addEventListener("change", async (event) => {
         await selectSong(event.target.value);
     });
 
-    // 4. Run an initial update to fill in any default songs
+    parentDiv.appendChild(songSelector);
+
+    //  Run an initial update
     updateSongSelector();
 }
 

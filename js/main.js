@@ -1,48 +1,60 @@
-
-//
-
-Tone.context._latencyHint = "playback";
-Tone.context._lookAhead= 0.15;
-
+// imports
 
 
 import {Song, songs} from "./Song.js";
-import {createSongSelector, updateSongSelector} from "./songSelector.js";
+import {createSongSelector, songSelector} from "./songSelector.js";
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
-import {createPlayButton, transportStop} from "./transportButtons.js";
+import {transportStop} from "./transportButtons.js";
 import {updateProgress, createProgress, clearProgress} from "./progressBars.js";
 import {loadBuffers, cancelLoading} from "./audioBuffer.js";
-import {configureTimeline, createTimeline, updateTimelineMarker} from "./timeline.js";
-// import {createBpmSlider} from "./inProgress/bpmSlider.js";
+import {resetLoop, configureTimeLine, updateTimelineMarker} from "./timeline.js";
+import {createTransportControl, transportControls} from "./transportControl.js";
+import {updatePositionDisplay, updateTimeDisplay} from "./transportDisplays.js";
 
+import {bpmControls, createBpmControls, resetBPMControls} from "./bpmControls.js";
 
+//  global transport propertie
+//
+Tone.getContext().rawContext.sampleRate
+
+Tone.context._latencyHint = "playback";
+Tone.context._lookAhead = 0.06;
+Tone.context.updateInterval = 0.03
+// Tone.getTransport().PPQ = 196;
+//
 
 
 // load some songs from database (saved in 'songs' directory
-await Song.fromSongDatabase("dontStop")
-await Song.fromSongDatabase("baraye")
-await Song.fromSongDatabase("baraye-m4a")
-await Song.fromSongDatabase("schief")
-await Song.fromSongDatabase("schief_piano_web")
+await Song.fromSongDatabase("hans")
+// await Song.fromSongDatabase("dontStop")
+// await Song.fromSongDatabase("baraye")
+// await Song.fromSongDatabase("baraye-m4a")
+// await Song.fromSongDatabase("schief")
+// await Song.fromSongDatabase("schief_piano_web")
 
 export let activeSong = null;
+export let playbackRate = 1;
 
 const choirMixerContainer = document.getElementById("choir-mixer");
+choirMixerContainer.classList.add("flex-column", "w-90", "center");
 
 
-createSongSelector(choirMixerContainer, songs);
-createPlayButton(choirMixerContainer);
-// createBpmSlider(choirMixerContainer);
+// createSongSelector(choirMixerContainer);
 
 
 
 export async function selectSong(songID, onProgress) {
+    transportControls.style.display = "none";
+    bpmControls.style.display = 'none';
 
-    // if there is no active song, create empty Mixer
+    // if there is no active song, this is the first time song select is called
+    // create empty Mixer and empty transport
     if (!activeSong) {
         createMixer(choirMixerContainer);
-        createTimeline(choirMixerContainer);
+        createTransportControl(choirMixerContainer);
+        createBpmControls(choirMixerContainer);
     }
+
 
     // If selected song is identical with active Song, do nothing
     if (songs.get(songID) === activeSong) {
@@ -51,12 +63,15 @@ export async function selectSong(songID, onProgress) {
 
     // If there's an active song currently downloading, cancel it first!
     if (activeSong) {
+
         cancelLoading();
         transportStop();
         activeSong.disconnect(); // Ensure dispose cleans up references
     }
 
     // Now set activeSong
+
+    resetLoop();
     activeSong = songs.get(songID);
 
 
@@ -86,18 +101,22 @@ export async function selectSong(songID, onProgress) {
 function finalizeControls(delay) {
     configureTransport();
     activeSong.connect();
-    configureTimeline(activeSong)
+    configureTimeLine();
+    resetBPMControls();
     setTimeout(() => {
         createTrackControls(activeSong);
+        transportControls.style.display = "";
+        bpmControls.style.display = "";
     }, delay)
 
 }
 
 function configureTransport() {
-    Tone.Transport.bpm.value = activeSong.bpm;
-    Tone.Transport.loop = true;
-    Tone.Transport.loopStart = 0;
-    Tone.Transport.loopEnd = activeSong.duration;
+    Tone.getTransport().bpm.value = activeSong.bpm;
+    Tone.getTransport().timeSignature = activeSong.timeSignature;
+    Tone.getTransport().loop = true;
+    Tone.getTransport().loopStart = 0;
+    Tone.getTransport().loopEnd = activeSong.duration;
 }
 
 
@@ -120,76 +139,39 @@ async function loadBuffersAndUpdateProgressBars(song, strips, onProgress) {
     }
 }
 
-
-function updateSlowUI(){
-    if (activeSong) {
-        updatePositionDisplay()
-        updateMyPositionDisplay()
-        updateTimeDisplay()
+//
+function updateSlowUI() {
+    if (activeSong && activeSong.isLoaded) {
         updateTimelineMarker();
+        updatePositionDisplay();
+        updateTimeDisplay()
     }
-    setTimeout(updateSlowUI, 60);
+    setTimeout(updateSlowUI, 80);
 }
 
 function updateFastUI() {
-    if (activeSong) {
+    if (activeSong && activeSong.isLoaded) {
         updateMeters(activeSong)
     }
 
-        requestAnimationFrame(updateFastUI);
+    requestAnimationFrame(updateFastUI);
 }
-
-// T I M E L I N E
-// following to be placed somewhere else
-
-
-//  DISPLAYS
-
-function updatePositionDisplay() {
-    const position = Tone.Transport.position.split(":")
-    positionDisplay.innerText =
-        `${parseInt(position[0])}.` +
-        `${parseInt(position[1])}.` +
-        `${Math.floor(parseFloat(position[2]))}`;
-}
-
-function updateMyPositionDisplay() {
-    const beatInSeconds = 60.0 / Tone.Transport.bpm.value;
-    myPositionDisplay.innerText = `${Tone.Transport.seconds / beatInSeconds}`;
-
-}
-
-function updateTimeDisplay() {
-    timeDisplay.innerText = new Date(Tone.Transport.seconds * 1000)
-        .toISOString()
-        .slice(14, 22);
-}
-
-
-//  testing
-
-const positionDisplay = document.createElement("div");
-const myPositionDisplay = document.createElement("div");
-const timeDisplay = document.createElement("div");
-
-
-choirMixerContainer.appendChild(positionDisplay);
-choirMixerContainer.appendChild(myPositionDisplay);
-choirMixerContainer.appendChild(timeDisplay);
-
-updateFastUI();
-updateSlowUI();
-
-
-
 
 
 // I N   P R O G R E S S
 
-export function updateTempo(ratio) {
-    Tone.Transport.bpm.value = activeSong ? activeSong.bpm * ratio : 120 * ratio;
-    // console.log(Tone.Transport.bpm.value);
+export function updateTempo(newPlaybackRate) {
+    playbackRate = newPlaybackRate;
+    Tone.getTransport().bpm.value = activeSong.bpm * newPlaybackRate;
     activeSong.tracks.forEach(track => {
-        track.player.playbackRate = ratio;
+        track.player.playbackRate = newPlaybackRate;
     })
+    configureTimeLine()
 }
+
+// start gui
+updateFastUI();
+updateSlowUI();
+
+// select song
+await selectSong('hans')

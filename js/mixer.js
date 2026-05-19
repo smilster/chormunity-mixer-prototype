@@ -9,15 +9,14 @@ const DB_MAX_VOLUME = 6;
 const DB_RANGE_VOLUME = DB_MAX_VOLUME - DB_MIN_VOLUME;
 
 
-const DB_MIN_METER = -60;
+const DB_MIN_METER = -45;
 const DB_MAX_METER = 0;
 const DB_RANGE_METER = DB_MAX_METER - DB_MIN_METER;
-
 
 export function createMixer(parentDiv) {
     mixer = document.createElement("div");
     mixer.id = "mixer";
-    mixer.className = "mixer border round center";
+    mixer.className = "container flex-wrap border round center";
     parentDiv.appendChild(mixer);
 }
 export function initializeMixer(song) {
@@ -27,20 +26,20 @@ export function initializeMixer(song) {
     mixer.innerHTML = '';
 
 
-    song.trackConfigs.forEach(trackConfig => {
+    song.tracks.forEach(track => {
         const channel = document.createElement("div");
-        channel.id = 'channel-' + trackConfig.id;
+        channel.id = 'channel-' + track.id;
         channel.className = 'mixer-channel flex-column border round center';
 
 
         const channelLabel = document.createElement("div");
-        channelLabel.id = 'channel-label-' + trackConfig.id;
+        channelLabel.id = 'channel-label-' + track.id;
         channelLabel.className = 'label blue';
-        channelLabel.innerHTML = trackConfig.label;
+        channelLabel.innerHTML = track.label;
 
 
         const channelContent = document.createElement("div");
-        channelContent.id = 'channel-content-' + trackConfig.id;
+        channelContent.id = 'channel-content-' + track.id;
         channelContent.className = 'flex-grow flex-column center w-100';
 
         // build
@@ -77,6 +76,8 @@ export function createTrackControls(song) {
 
 }
 
+
+
 function createPanControl(track) {
     const panControl = document.createElement("div");
     panControl.className = 'center';
@@ -92,7 +93,7 @@ function createPanControl(track) {
     panSlider.step = '0.01';
     panSlider.min = '-1';
     panSlider.max = '1';
-    panSlider.value = track.panner.pan.value.toString();
+    panSlider.value = track.pan.toString();
     panSlider.addEventListener('input', (event) => {
         panSlider.onchange = (event) => {
             track.pan = event.target.value;
@@ -126,7 +127,7 @@ function createVolumeControl(track) {
     volumeSlider.step = '0.01';
     volumeSlider.max = DB_MAX_VOLUME.toString();
     volumeSlider.min = DB_MIN_VOLUME.toString();
-    volumeSlider.value = track.volume.volume.value.toString();
+    volumeSlider.value = track.vol.toString();
     volumeSlider.addEventListener('input', (event) => {
 
         let newVol = event.target.value
@@ -164,21 +165,17 @@ function createVolumeControl(track) {
 function createMuteButton(track){
     const muteButton = document.createElement("div");
     muteButton.innerHTML = `mute`;
-    muteButton.className = 'label small btn bg-dark-gray gray round-sm color-transition w-100';
+    muteButton.className = 'label small btn bg-light-gray lighter-gray round-sm color-transition w-100';
     muteButton.onclick = () => {
         if (track.volume.mute) {
             track.volume.mute = false
             track.volume.volume.rampTo(parseFloat(track.vol),0.03);
-            muteButton.classList.remove('bg-red');
-            muteButton.classList.add('bg-dark-gray');
-            muteButton.classList.remove('bright');
-            muteButton.classList.add('gray');
+            muteButton.classList.remove('bg-red','bright');
+            muteButton.classList.add('bg-light-gray','lighter-gray');
         } else {
             track.volume.mute = true;
-            muteButton.classList.remove('bg-dark-gray');
-            muteButton.classList.add('bg-red');
-            muteButton.classList.remove('gray');
-            muteButton.classList.add('bright');
+            muteButton.classList.remove('bg-light-gray','lighter-gray');
+            muteButton.classList.add('bg-red','bright');
         }
     }
 

@@ -1,11 +1,19 @@
+import {activeSong, playbackRate} from "./main.js";
+import {positionToSeconds, secondsToPosition} from "./transportControl.js";
+
 let timeline;
+let timelineMarkerWrapper;
 let timelineMarker;
-let timelineDisplay;
-let timelineRegion; // New element to visually show the selected range
+let timelineHoverLabel;
 
-let bpm;
-let duration;
+let loopRegion; // New element to visually show the selected range
+let loopStartLabel;
+let loopEndLabel;
 
+let quantization = "4n";
+let loopQuantization = "1m";
+
+let duration = 120;
 // State tracking variables
 let isPointerDown = false;
 let startX = 0;
@@ -13,35 +21,66 @@ let startPos = 0;
 const dragThreshold = 5; // Pixels of movement required to count as a drag
 
 // Your exported range variables
-export let rangeStart = null;
-export let rangeEnd = null;
+export let loopRelativePositionStart = null;
+export let loopRelativePositionEnd = null;
 
 export function createTimeline(parentDiv) {
     timeline = document.createElement("div");
-    timeline.className = "timeline w-100 h-50px bg-dark-gray position-relative"; // Added position-relative for absolute children
+    timeline.className =
+        "timeline round-sm border w-100 h-50px bg-light-gray position-relative flex-grow m-10px";
 
+    // LOOP REGION (NOT CLIPPED)
+    loopRegion = document.createElement("div");
+    loopRegion.className =
+        "loop-region bg-bright shadow-bright position-absolute h-100";
+
+    // MARKER WRAPPER (THIS IS WHAT GETS CLIPPED)
+    timelineMarkerWrapper = document.createElement("div");
+    timelineMarkerWrapper.className =
+        "marker-wrapper round-sm w-100 h-100 position-absolute overflow-hidden";
+
+    // MARKER (CLIPPED INSIDE WRAPPER)
     timelineMarker = document.createElement("div");
-    timelineMarker.className = "timeline-marker bg-red shadow-red";
+    timelineMarker.className =
+        "timeline-marker bg-red shadow-red position-absolute";
 
-    timelineDisplay = document.createElement("div");
-    timelineDisplay.className = "timeline-display label large";
+    timelineMarkerWrapper.appendChild(timelineMarker);
 
-    // Create the visual region element
-    timelineRegion = document.createElement("div");
-    timelineRegion.className = "timeline-region bg-bright shadow-bright position-absolute h-100";
-    timelineRegion.style.pointerEvents = "none"; // Ensures it doesn't block interactions
-    timelineRegion.style.display = "none";
+    // DISPLAY (NEVER CLIPPED)
+    const labelClassName = "  monospace position-absolute no-interact ";
+
+    timelineHoverLabel = document.createElement("div");
+    timelineHoverLabel.className = labelClassName;
+    timelineHoverLabel.classList.add("timeline-label",  "green", "bg-gray", "border","round-sm")
+
+    // LOOP LABELS (NEVER CLIPPED)
+    loopStartLabel = document.createElement("div");
+    loopStartLabel.className = labelClassName;
+    loopStartLabel.classList.add("loop-label","label", "loop-start","green")
+
+    loopEndLabel = document.createElement("div");
+    loopEndLabel.className = labelClassName;
+    loopEndLabel.classList.add("loop-label","label", "loop-end","green")
+
+    // ORDERING (layering)
+    timeline.appendChild(loopStartLabel);
+    timeline.appendChild(loopEndLabel);
+
+    timeline.appendChild(loopRegion);          // behind everything
+    timeline.appendChild(timelineMarkerWrapper); // clipped area only
+    timeline.appendChild(timelineHoverLabel);     // always visible
 
     addTimelineEventListeners();
-
-    timeline.appendChild(timelineRegion); // Append region first so it sits behind the marker
-    timeline.appendChild(timelineMarker);
-    timeline.appendChild(timelineDisplay);
 
     parentDiv.appendChild(timeline);
 }
 
-function calculatePositionFromTimeline(event) {
+export function configureTimeLine(){
+    duration = activeSong.duration / playbackRate;
+}
+
+
+function calculateRelativePosition(event) {
     const boundingRect = timeline.getBoundingClientRect();
     // Use clientX for pointer events
     const x = event.clientX - boundingRect.left;
@@ -50,26 +89,38 @@ function calculatePositionFromTimeline(event) {
 }
 
 
-function updateRegionUI() {
-    if (rangeStart === null || rangeEnd === null) return;
 
-    const leftPercent = rangeStart * 100;
-    const widthPercent = (rangeEnd - rangeStart) * 100;
+function updateLoopRegion() {
+    if (loopRelativePositionStart === null || loopRelativePositionEnd === null) return;
 
-    timelineRegion.style.left = `${leftPercent}%`;
-    timelineRegion.style.width = `${widthPercent}%`;
-    timelineRegion.style.display = "block";
+    const width = timeline.getBoundingClientRect().width;
+
+    const startX = loopRelativePositionStart * width;
+    const endX = loopRelativePositionEnd * width;
+
+    // --- REGION ---
+    loopRegion.style.left = `${startX}px`;
+    loopRegion.style.width = `${endX - startX}px`;
+    loopRegion.style.display = "block";
+
+    // --- START LABEL ---
+    loopStartLabel.style.left = `${startX}px`;
+    loopStartLabel.textContent = secondsToPosition(loopRelativePositionStart * duration );
+    loopStartLabel.style.display = "block";
+
+    // --- END LABEL ---
+    loopEndLabel.style.left = `${endX}px`;
+    loopEndLabel.textContent = secondsToPosition(loopRelativePositionEnd * duration );
+    loopEndLabel.style.display = "block";
 }
 
-export function configureTimeline(song){
-    bpm = song.bpm;
-    duration = song.duration;
-}
 
-export function updateTimelineMarker(){
-    const boundingRect = timeline.getBoundingClientRect();
-    const position = boundingRect.width * Tone.Transport.seconds / duration;
-    timelineMarker.style.left = `${position}px`;
+export function updateTimelineMarker() {
+    const position = Tone.getTransport().position;
+    const seconds = positionToSeconds(position);
+    const markerPosition = timeline.getBoundingClientRect().width * seconds / duration;
+    timelineMarker.style.left = `${markerPosition}px`;
+
 }
 
 
@@ -78,40 +129,40 @@ export function updateTimelineMarker(){
 
 function addTimelineEventListeners() {
     timeline.addEventListener("mouseenter", () => {
-        timelineDisplay.style.display = "block";
+        timelineHoverLabel.style.display = "block";
     });
 
     timeline.addEventListener("mouseleave", () => {
-        timelineDisplay.style.display = "none";
+        timelineHoverLabel.style.display = "none";
     });
 
     timeline.addEventListener("pointermove", (event) => {
-        const position = calculatePositionFromTimeline(event);
+        const relativePosition = calculateRelativePosition(event);
+        const rect = timeline.getBoundingClientRect();
 
-        // 1. Fix Tooltip Position:
-        // Since CSS is 'position: fixed', give it raw client coordinates.
-        // We subtract an extra 10-15px from Y just to float it slightly above the cursor.
-        timelineDisplay.textContent = position.toFixed(2);
-        timelineDisplay.style.left = `${event.clientX}px`;
-        timelineDisplay.style.top = `${event.clientY - 15}px`;
+
+        timelineHoverLabel.textContent = secondsToPosition(duration * relativePosition);
+        timelineHoverLabel.style.left = `${event.clientX - rect.left}px`;
 
         // 2. Handle Active Dragging Region
         if (isPointerDown) {
-            const currentPos = position;
-            rangeStart = Math.min(startPos, currentPos);
-            rangeEnd = Math.max(startPos, currentPos);
+            const currentPos = relativePosition;
+            loopRelativePositionStart = Math.min(startPos, currentPos);
+            loopRelativePositionEnd = Math.max(startPos, currentPos);
 
+            loopRelativePositionStart = Tone.Time(loopRelativePositionStart * duration).quantize(loopQuantization) / duration;
+            loopRelativePositionEnd = Tone.Time(loopRelativePositionEnd * duration).quantize(loopQuantization) / duration;
 
-            updateRegionUI();
+            updateLoopRegion();
         }
     });
 
     timeline.addEventListener("pointerdown", (event) => {
         isPointerDown = true;
         startX = event.clientX;
-        startPos = calculatePositionFromTimeline(event);
+        startPos = calculateRelativePosition(event);
 
-        timelineRegion.style.display = "none";
+        loopRegion.style.display = "none";
         timeline.setPointerCapture(event.pointerId);
     });
 
@@ -123,19 +174,35 @@ function addTimelineEventListeners() {
         const deltaX = Math.abs(event.clientX - startX);
 
         if (deltaX < dragThreshold) {
-            rangeStart = null;
-            rangeEnd = null;
-            timelineRegion.style.display = "none";
-
-            const percentage = calculatePositionFromTimeline(event);
-            const transportSeconds = duration * percentage;
-            Tone.Transport.loopStart = 0;
-            Tone.Transport.loopEnd = duration;
-            Tone.Transport.seconds = transportSeconds;
+            resetLoop()
+            Tone.getTransport().seconds = Tone.Time(duration * calculateRelativePosition(event)).quantize(quantization);
         } else {
-            Tone.Transport.seconds = duration * rangeStart;
-            Tone.Transport.loopStart = duration * rangeStart;
-            Tone.Transport.loopEnd = duration * rangeEnd;
+            Tone.getTransport().seconds = duration * loopRelativePositionStart ;
+            Tone.getTransport().loopStart = duration * loopRelativePositionStart;
+            Tone.getTransport().loopEnd = duration * loopRelativePositionEnd;
         }
     });
 }
+
+
+
+
+
+export function resetLoop() {
+    if (!activeSong) return;
+    if (!activeSong.isLoaded) return;
+
+    loopRelativePositionStart = null;
+    loopRelativePositionEnd = null;
+    loopRegion.style.display = "none";
+    loopStartLabel.style.display = "none"
+    loopEndLabel.style.display = "none";
+
+
+    Tone.getTransport().loopStart = 0;
+    Tone.getTransport().loopEnd = duration;
+}
+
+window.addEventListener("resize", () => {
+    updateLoopRegion();
+});
