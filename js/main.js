@@ -25,8 +25,8 @@ Tone.context.updateInterval = 0.03
 
 
 // load some songs from database (saved in 'songs' directory
-await Song.fromSongDatabase("hans")
-// await Song.fromSongDatabase("dontStop")
+// await Song.fromSongDatabase("hans")
+await Song.fromSongDatabase("dontStop")
 // await Song.fromSongDatabase("baraye")
 // await Song.fromSongDatabase("baraye-m4a")
 // await Song.fromSongDatabase("schief")
@@ -174,4 +174,4 @@ updateFastUI();
 updateSlowUI();
 
 // select song
-await selectSong('hans')
+await selectSong('dontStop')
