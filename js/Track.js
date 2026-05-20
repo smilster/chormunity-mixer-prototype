@@ -1,3 +1,10 @@
+// set default parameters, consider moving them into Track class
+const DEFAULT_GRAIN = 0.1;
+const DEFAULT_OVERLAP = 0.6 * DEFAULT_GRAIN;
+
+const DEFAULT_VOL = -15;
+const DEFAULT_PAN = 0;
+
 export class Track {
 
 
@@ -13,18 +20,17 @@ export class Track {
         // GRAIN PLAYER PARAMETERS
         this.player = null;
 
-        // GRAIN PLAYER PARAMETERS (not used. sounds shitty when changing speed)
-        this.grain = 0.1
-        this.overlap = 0.45 * this.grain;
+        // GRAIN PLAYER PARAMETERS
+        this.grain = trackConfig.grain ? trackConfig.grain : DEFAULT_GRAIN;
+        this.overlap = trackConfig.overlap ? trackConfig.overlap : DEFAULT_OVERLAP;
         this.playbackRate = 1
 
 
 
+        // GENERAL PLAYER PARAMETERS
 
-        this.vol = trackConfig.vol ? trackConfig.vol : -15;
-
-
-        this.pan = trackConfig.pan ? trackConfig.pan : 0;
+        this.vol = trackConfig.vol ? trackConfig.vol : DEFAULT_VOL;
+        this.pan = trackConfig.pan ? trackConfig.pan : DEFAULT_PAN;
 
 
         this.panner = new Tone.Panner(this.pan);
