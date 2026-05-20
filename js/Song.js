@@ -3,12 +3,24 @@
 // =====================================================
 import {Track} from "./Track.js";
 
+// DEFAULT SONG CONFIG PARAMETERS, consider moving them into Song class
 
+
+const DEFAULT_TIME_SIGNATURE = [4,4];
+const DEFAULT_START_BAR = 1;
+
+
+// song database specifications
 const SONG_DATABASE_DIR = 'songs';
 const SONG_CONFIG_JSON = 'config.json';
+
+// global song list, <songID,song>
 export let songs = new Map();
 
 export class Song {
+
+
+
     /**
      *
      * @param songConfig JSON file containing the config
@@ -27,12 +39,12 @@ export class Song {
         if (songConfig.timeSignature) {
             this.timeSignature = songConfig.timeSignature.split("/")
         } else {
-            this.timeSignature = [4, 4];
+            this.timeSignature = DEFAULT_TIME_SIGNATURE;
         }
 
         console.log(songConfig.timeSignature);
         console.log(this.timeSignature)
-        this.startBar = songConfig.startBar;
+        this.startBar = songConfig.startBar ? songConfig.startBar : DEFAULT_START_BAR;
 
 
         // Map and normalize the incoming tracks array

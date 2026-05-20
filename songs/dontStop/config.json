@@ -1,6 +1,8 @@
 {
   "title": "Don't Stop Me Now (Piano)",
   "bpm": 110,
+  "timeSignature": "4/4",
+  "startBar": 1,
   "tracks": [
     {
       "label": "Sopran",
