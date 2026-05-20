@@ -50,16 +50,15 @@ export function positionToSeconds(position) {
     return totalSubdivisions * secondsPerSubdivision;
 }
 
-export function secondsToPosition(seconds){
-    const timeSignature = activeSong.timeSignature
-    const beatsPerMeasure = timeSignature[0]/timeSignature[1] * 4
+export function secondsToPosition(seconds,measureShift=0,showMeasureOnly = false){
 
-    console.log(beatsPerMeasure);
-    const totalBeats = ( seconds * Tone.getTransport().bpm.value) / 60 ;
+    const position = Tone.Time(seconds).toBarsBeatsSixteenths().split(":").map(Number);
+    const measure = position[0] + activeSong.startBar + measureShift;
+    if (showMeasureOnly) {
+        return measure.toString();
+    }
 
-    const measure = Math.floor(totalBeats / beatsPerMeasure) + activeSong.startBar;
-    const beat = Math.floor(totalBeats % beatsPerMeasure) + 1;
-
+    const beat = position[1] + 1;
     return `${measure}:${beat}`;
 }
 

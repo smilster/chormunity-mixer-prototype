@@ -30,8 +30,8 @@ const DEFAULT_SONG_ID = "hans"
 // load some songs from database (saved in 'songs' directory
 await Song.fromSongDatabase("hans")
 await Song.fromSongDatabase("dontStop")
-await Song.fromSongDatabase("baraye")
-await Song.fromSongDatabase("schief")
+// await Song.fromSongDatabase("baraye")
+// await Song.fromSongDatabase("schief")
 
 export let activeSong = null;
 export let playbackRate = 1;

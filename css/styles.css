@@ -330,10 +330,9 @@ body {
 }
 
 
-.timeline-label {
-    position: absolute;
+.timeline-hover-label {
     transform: translateX(-50%);
-    top: -30px;
+    top: -28px;
     pointer-events: none;
     z-index: 10;
     display: none;
@@ -375,10 +374,12 @@ body {
 }
 
 .loop-label.loop-start {
-    bottom: -20px;   /* BELOW timeline */
+    bottom: -21px; /* above timeline */
+    transform: translateX(-110%);
 }
 .loop-label.loop-end {
-    top: -20px;   /* BELOW timeline */
+    bottom: -21px; /* BELOW timeline */
+    transform: translateX(10%);
 }
 
 /*.loop-start-display {*/

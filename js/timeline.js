@@ -47,20 +47,20 @@ export function createTimeline(parentDiv) {
     timelineMarkerWrapper.appendChild(timelineMarker);
 
     // DISPLAY (NEVER CLIPPED)
-    const labelClassName = "  monospace position-absolute no-interact ";
+    const labelClassName = "  monospace position-absolute no-interact green";
 
     timelineHoverLabel = document.createElement("div");
     timelineHoverLabel.className = labelClassName;
-    timelineHoverLabel.classList.add("timeline-label",  "green", "bg-gray", "border","round-sm")
+    timelineHoverLabel.classList.add("timeline-hover-label")
 
     // LOOP LABELS (NEVER CLIPPED)
     loopStartLabel = document.createElement("div");
     loopStartLabel.className = labelClassName;
-    loopStartLabel.classList.add("loop-label","label", "loop-start","green")
+    loopStartLabel.classList.add("loop-label","label", "loop-start")
 
     loopEndLabel = document.createElement("div");
     loopEndLabel.className = labelClassName;
-    loopEndLabel.classList.add("loop-label","label", "loop-end","green")
+    loopEndLabel.classList.add("loop-label","label" , "loop-end")
 
     // ORDERING (layering)
     timeline.appendChild(loopStartLabel);
@@ -95,22 +95,44 @@ function updateLoopRegion() {
 
     const width = timeline.getBoundingClientRect().width;
 
-    const startX = loopRelativePositionStart * width;
+    let startX = loopRelativePositionStart * width;
+    const startSeconds = Tone.Time(loopRelativePositionStart * duration).quantize(loopQuantization);
+    const startPosition = secondsToPosition(startSeconds,0,true);
+
     const endX = loopRelativePositionEnd * width;
+    const endSeconds = Tone.Time(loopRelativePositionEnd * duration).quantize(loopQuantization);
+    let endPosition = secondsToPosition(endSeconds,-1,true);
+
+    const loopWidth = endX - startX
+
+    if( Math.abs(startX - endX) < dragThreshold ) return;
+
+    let adaptiveStartX;
+
+    if (startPosition === endPosition) {
+        endPosition = ''
+        adaptiveStartX = startX + loopWidth / 2;
+        loopStartLabel.style.transform = "translateX(-50%)"
+    } else {
+        adaptiveStartX = startX;
+        loopStartLabel.style.transform = ""
+    }
+    console.log(startX);
+    console.log(adaptiveStartX);
 
     // --- REGION ---
     loopRegion.style.left = `${startX}px`;
-    loopRegion.style.width = `${endX - startX}px`;
+    loopRegion.style.width = `${loopWidth}px`;
     loopRegion.style.display = "block";
 
     // --- START LABEL ---
-    loopStartLabel.style.left = `${startX}px`;
-    loopStartLabel.textContent = secondsToPosition(loopRelativePositionStart * duration );
+    loopStartLabel.style.left = `${adaptiveStartX}px`;
+    loopStartLabel.textContent = startPosition
     loopStartLabel.style.display = "block";
 
     // --- END LABEL ---
     loopEndLabel.style.left = `${endX}px`;
-    loopEndLabel.textContent = secondsToPosition(loopRelativePositionEnd * duration );
+    loopEndLabel.textContent = endPosition;
     loopEndLabel.style.display = "block";
 }
 
@@ -139,13 +161,15 @@ function addTimelineEventListeners() {
     timeline.addEventListener("pointermove", (event) => {
         const relativePosition = calculateRelativePosition(event);
         const rect = timeline.getBoundingClientRect();
+        const seconds = Tone.Time(duration * relativePosition).quantize(quantization);
 
 
-        timelineHoverLabel.textContent = secondsToPosition(duration * relativePosition);
+        timelineHoverLabel.textContent = secondsToPosition(seconds);
         timelineHoverLabel.style.left = `${event.clientX - rect.left}px`;
 
         // 2. Handle Active Dragging Region
         if (isPointerDown) {
+
             const currentPos = relativePosition;
             loopRelativePositionStart = Math.min(startPos, currentPos);
             loopRelativePositionEnd = Math.max(startPos, currentPos);

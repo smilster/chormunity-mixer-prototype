@@ -42,9 +42,9 @@ export class Song {
             this.timeSignature = DEFAULT_TIME_SIGNATURE;
         }
 
-        console.log(songConfig.timeSignature);
-        console.log(this.timeSignature)
-        this.startBar = songConfig.startBar ? songConfig.startBar : DEFAULT_START_BAR;
+
+
+        this.startBar = songConfig.startBar.toString() ? parseFloat(songConfig.startBar) : DEFAULT_START_BAR;
 
 
         // Map and normalize the incoming tracks array
