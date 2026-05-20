@@ -23,13 +23,16 @@ Tone.context.updateInterval = 0.03
 // Tone.getTransport().PPQ = 196;
 //
 
+// set default songID
+
+const DEFAULT_SONG_ID = "hans"
 
 // load some songs from database (saved in 'songs' directory
-// await Song.fromSongDatabase("hans")
+await Song.fromSongDatabase("hans")
 await Song.fromSongDatabase("dontStop")
-// await Song.fromSongDatabase("baraye")
+await Song.fromSongDatabase("baraye")
 // await Song.fromSongDatabase("baraye-m4a")
-// await Song.fromSongDatabase("schief")
+await Song.fromSongDatabase("schief")
 // await Song.fromSongDatabase("schief_piano_web")
 
 export let activeSong = null;
@@ -40,7 +43,6 @@ choirMixerContainer.classList.add("flex-column", "w-90", "center");
 
 
 // createSongSelector(choirMixerContainer);
-
 
 
 export async function selectSong(songID, onProgress) {
@@ -139,7 +141,6 @@ async function loadBuffersAndUpdateProgressBars(song, strips, onProgress) {
     }
 }
 
-//
 function updateSlowUI() {
     if (activeSong && activeSong.isLoaded) {
         updateTimelineMarker();
@@ -158,8 +159,6 @@ function updateFastUI() {
 }
 
 
-// I N   P R O G R E S S
-
 export function updateTempo(newPlaybackRate) {
     playbackRate = newPlaybackRate;
     Tone.getTransport().bpm.value = activeSong.bpm * newPlaybackRate;
@@ -169,9 +168,16 @@ export function updateTempo(newPlaybackRate) {
     configureTimeLine()
 }
 
+// select song from url-parameters
+
+async function selectSongFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    let songID = params.get("song") ? params.get("song") : DEFAULT_SONG_ID;
+    await selectSong(songID)
+}
+
 // start gui
 updateFastUI();
 updateSlowUI();
 
-// select song
-await selectSong('dontStop')
+await selectSongFromUrl();
