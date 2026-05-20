@@ -1,29 +1,15 @@
 import {updateTempo, activeSong} from "./main.js";
 
-export const bpmControls = document.createElement('div');
 const bpmSlider = document.createElement('input');
 const bpmDisplay =document.createElement('div');
 
-export function createBpmControls(parentDiv){
-    bpmControls.className = 'container border round w-90 maxw-1200px flex-row center';
-
-    createBpmDisplay(bpmControls);
-
-    createBpmSlider(bpmControls);
-
-    createBpmResetButton(bpmControls);
-
-    parentDiv.appendChild(bpmControls);
-
-
-}
 
 
 
-function createBpmSlider(parentDiv) {
+export function createBpmSlider(parentDiv) {
 
 
-    bpmSlider.className = 'bar bg-dark flex-grow m-10px bpm-slider border round';
+    bpmSlider.className = 'bar bg-dark flex-grow m-10px bpm-slider border round maxw-120px';
 
     bpmSlider.type = 'range';
 
@@ -38,7 +24,7 @@ function createBpmSlider(parentDiv) {
     parentDiv.appendChild(bpmSlider);
 }
 
-function createBpmDisplay(parentDiv) {
+export function createBpmDisplay(parentDiv) {
 
     const wrapper = document.createElement("div");
     wrapper.className = "m-10px minw-100px position-relative h-50px";
@@ -67,7 +53,7 @@ function createBpmDisplay(parentDiv) {
 
 }
 
-function createBpmResetButton(parentDiv) {
+export function createBpmResetButton(parentDiv) {
     const bpmResetButton = document.createElement("div");
     bpmResetButton.classList.add("m-10px","btn");
 

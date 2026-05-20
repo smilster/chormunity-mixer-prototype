@@ -1,29 +1,8 @@
-import {createTimeline} from "./timeline.js";
-import {createPlayButton, createStopButton} from "./transportButtons.js";
 import {activeSong, playbackRate} from "./main.js";
-import {createPositionDisplay, createTimeDisplay} from "./transportDisplays.js";
-
-export const transportControls = document.createElement("div");
-
-export function createTransportControl(choirMixerContainer) {
-    transportControls.classList.add("container","border","round","w-90","maxw-1200px","flex-row");
-
-
-    createTimeDisplay(transportControls)
-    createPositionDisplay(transportControls);
-
-    createTimeline(transportControls);
-
-    createPlayButton(transportControls)
-    createStopButton(transportControls)
 
 
 
 
-    choirMixerContainer.appendChild(transportControls);
-
-
-}
 
 
 export function secondsToTimeFormat(time) {
@@ -62,8 +41,3 @@ export function secondsToPosition(seconds,measureShift=0,showMeasureOnly = false
     return `${measure}:${beat}`;
 }
 
-//
-// export function roundToBeat(seconds){
-//     const beatInSeconds = Tone.getTransport().bpm.value / 240;
-//     return Math.round(seconds / beatInSeconds) * beatInSeconds;
-// }

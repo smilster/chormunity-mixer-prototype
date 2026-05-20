@@ -12,6 +12,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    min-width: 700px;
 }
 
 
@@ -191,15 +193,15 @@ body {
 
 .container {
     background: var(--color-dark-gray);
-    padding: 20px;
+    padding: 10px;
     margin: 10px;
 }
 
 .mixer-channel {
     background: #222;
     padding: 10px;
-    width: 110px;
-    height: 310px;
+    width: 100px;
+    height: 300px;
     gap: 15px;
     box-sizing: border-box;
 }
@@ -611,6 +613,10 @@ body {
     max-width: 1200px;
 }
 
+.maxw-120px {
+    max-width: 120px;
+}
+
 
 .minw-100px {
     min-width: 100px;
@@ -707,4 +713,14 @@ body {
 }
 .m-10px {
     margin: 10px;
+}
+
+.m-5px {
+    margin: 10px;
+}
+
+
+
+.no-touch-scrolling {
+    touch-action: none;
 }

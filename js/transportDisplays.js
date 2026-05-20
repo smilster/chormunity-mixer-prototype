@@ -7,7 +7,7 @@ let timeDisplay;
 export function createPositionDisplay(parentDiv) {
 
     const wrapper = document.createElement("div");
-    wrapper.className = "m-10px minw-100px position-relative";
+    wrapper.className = "m-10px minw-100px position-relative h-50px";
 
     positionDisplay = document.createElement("div");
     positionDisplay.className = "lcd border round-sm bg-dark w-100 h-100 d-flex center  green no-interact";
@@ -39,7 +39,7 @@ export function updatePositionDisplay() {
 
 export function createTimeDisplay(parentDiv) {
     const wrapper = document.createElement("div");
-    wrapper.className = "m-10px minw-100px position-relative";
+    wrapper.className = "m-10px minw-100px position-relative h-50px";
 
     timeDisplay = document.createElement("div");
     timeDisplay.className = "lcd border round-sm bg-dark w-100 h-100 d-flex center  bright no-interact ";

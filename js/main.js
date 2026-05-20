@@ -2,16 +2,16 @@
 
 
 import {Song, songs} from "./Song.js";
-import {createSongSelector, songSelector} from "./songSelector.js";
+// import {createSongSelector, songSelector} from "./songSelector.js";
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
 import {updateProgress, createProgress, clearProgress} from "./progressBars.js";
 import {loadBuffers, cancelLoading} from "./audioBuffer.js";
 import {resetLoop, configureTimeLine, updateTimelineMarker} from "./timeline.js";
-import {createTransportControl, transportControls} from "./transportControl.js";
 import {updatePositionDisplay, updateTimeDisplay} from "./transportDisplays.js";
 
-import {bpmControls, createBpmControls, resetBPMControls} from "./bpmControls.js";
+import {resetBPMControls} from "./bpmControls.js";
+import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
 
 //  global transport propertie
 //
@@ -45,14 +45,14 @@ choirMixerContainer.classList.add("flex-column", "w-90", "center");
 
 export async function selectSong(songID, onProgress) {
     transportControls.style.display = "none";
-    bpmControls.style.display = 'none';
+    timelineControls.style.display = 'none';
 
     // if there is no active song, this is the first time song select is called
     // create empty Mixer and empty transport
     if (!activeSong) {
         createMixer(choirMixerContainer);
-        createTransportControl(choirMixerContainer);
-        createBpmControls(choirMixerContainer);
+        createTimelineControls(choirMixerContainer);
+        createTransportControls(choirMixerContainer);
     }
 
 
@@ -106,7 +106,7 @@ function finalizeControls(delay) {
     setTimeout(() => {
         createTrackControls(activeSong);
         transportControls.style.display = "";
-        bpmControls.style.display = "";
+        timelineControls.style.display = "";
     }, delay)
 
 }
@@ -143,7 +143,7 @@ function updateSlowUI() {
     if (activeSong && activeSong.isLoaded) {
         updateTimelineMarker();
         updatePositionDisplay();
-        updateTimeDisplay()
+        // updateTimeDisplay()
     }
     setTimeout(updateSlowUI, 80);
 }

@@ -27,7 +27,7 @@ export let loopRelativePositionEnd = null;
 export function createTimeline(parentDiv) {
     timeline = document.createElement("div");
     timeline.className =
-        "timeline round-sm border w-100 h-50px bg-light-gray position-relative flex-grow m-10px";
+        "timeline round border w-100 h-50px bg-light-gray position-relative flex-grow m-10px no-touch-scrolling";
 
     // LOOP REGION (NOT CLIPPED)
     loopRegion = document.createElement("div");
@@ -117,8 +117,6 @@ function updateLoopRegion() {
         adaptiveStartX = startX;
         loopStartLabel.style.transform = ""
     }
-    console.log(startX);
-    console.log(adaptiveStartX);
 
     // --- REGION ---
     loopRegion.style.left = `${startX}px`;
@@ -191,6 +189,9 @@ function addTimelineEventListeners() {
     });
 
     timeline.addEventListener("pointerup", (event) => {
+        if (event.pointerType === "touch") {
+            timelineHoverLabel.style.display = "none";
+        }
         if (!isPointerDown) return;
         isPointerDown = false;
         timeline.releasePointerCapture(event.pointerId);
