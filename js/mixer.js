@@ -40,7 +40,7 @@ export function initializeMixer(song) {
 
         const channelContent = document.createElement("div");
         channelContent.id = 'channel-content-' + track.id;
-        channelContent.className = 'flex-grow flex-column center w-100';
+        channelContent.className = 'flex-grow flex-column center w-100 space-evenly';
 
         // build
         channel.appendChild(channelLabel);
@@ -59,17 +59,8 @@ export function createTrackControls(song) {
         channelContent.innerHTML = '';
 
 
-        const gapOne = document.createElement("div");
-        gapOne.className = 'flex-grow';
-        const gapTwo = document.createElement("div");
-        gapTwo.className = 'flex-grow'
-
-
         channelContent.appendChild(createPanControl(song.tracks[id]));
-        channelContent.appendChild(gapOne);
         channelContent.appendChild(createVolumeControl(song.tracks[id]));
-
-        channelContent.appendChild(gapTwo);
         channelContent.appendChild(createMuteButton(song.tracks[id]));
 
     })
@@ -111,19 +102,19 @@ function createPanControl(track) {
 
 function createVolumeControl(track) {
     const volumeControl = document.createElement("div");
-    volumeControl.className = 'center flex-grow';
+    volumeControl.className = 'flex-grow w-100';
 
-    // const volumeLabel = document.createElement("div");
-    // volumeLabel.className = 'center label small gray'
-    // volumeLabel.innerHTML = 'volume';
+
 
     const sliderMeterWrapper = document.createElement("div");
-    sliderMeterWrapper.className = 'flex-row flex-grow'
+    sliderMeterWrapper.className = ' flex-row w-100 space-evenly'
+
 
     const volumeSlider = document.createElement("input")
     volumeSlider.type = 'range'
     volumeSlider.className = 'volume-slider bar vertical invertY bg-dark round border h-180px';
-
+    // volumeSlider.orientation = 'vertical'
+    //
     volumeSlider.step = '0.01';
     volumeSlider.max = DB_MAX_VOLUME.toString();
     volumeSlider.min = DB_MIN_VOLUME.toString();
@@ -148,12 +139,9 @@ function createVolumeControl(track) {
     meter.style.backgroundColor = "var(--color-green)"
     meters[track.id] = meter;
 
-
-    // volumeControl.appendChild(volumeLabel);
+    fullMeter.appendChild(meter);
 
     sliderMeterWrapper.appendChild(volumeSlider);
-
-    fullMeter.appendChild(meter);
     sliderMeterWrapper.appendChild(fullMeter);
 
     volumeControl.appendChild(sliderMeterWrapper);
@@ -207,7 +195,5 @@ export function updateMeters(song){
         }
     })
 }
-
-
 
 

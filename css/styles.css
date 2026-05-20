@@ -37,6 +37,15 @@ body {
     --color-border: #333;
     --bar-width: 8px;
     --box-shadow: 0 0 5px;
+
+    --pan-thumb-width: 20px;
+    --pan-thumb-height: 30px;
+    --pan-thumb-border:  2px solid var(--color-dark);
+
+
+    --vol-thumb-width: 36px;
+    --vol-thumb-height: 24px;
+    --vol-thumb-border:  2px solid var(--color-dark);
 }
 
 /* ======================
@@ -193,14 +202,16 @@ body {
 
 .container {
     background: var(--color-dark-gray);
-    padding: 10px;
+    padding: 10px;.m-10px {
+    margin: 10px;
+}
     margin: 10px;
 }
 
 .mixer-channel {
     background: #222;
     padding: 10px;
-    width: 100px;
+    width: 120px;
     height: 300px;
     gap: 15px;
     box-sizing: border-box;
@@ -214,12 +225,14 @@ body {
 }
 
 
+
+
 /* Chrome, Safari, Edge, and Opera */
 .pan-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    border: 2px solid var(--color-dark);
-    width: 16px;
-    height: 30px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -227,9 +240,9 @@ body {
 
 /* Firefox */
 .pan-slider::-moz-range-thumb {
-    border: 2px solid var(--color-dark);
-    width: 16px;
-    height: 30px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -237,9 +250,9 @@ body {
 
 /* ms */
 .pan-slider::-ms-thumb {
-    border: 2px solid var(--color-dark);
-    width: 16px;
-    height: 30px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -250,7 +263,6 @@ body {
 
 
 .volume-slider {
-    margin: 0 auto;
     appearance: none;
     z-index: 10;
 }
@@ -258,9 +270,9 @@ body {
 /* Chrome, Safari, Edge, and Opera */
 .volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    border: 2px solid var(--color-dark);
-    width: 36px;
-    height: 20px;
+    border: var(--vol-thumb-border);
+    width: var(--vol-thumb-width);
+    height: var(--vol-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -268,9 +280,9 @@ body {
 
 /* Firefox */
 .volume-slider::-moz-range-thumb {
-    border: 2px solid var(--color-dark);
-    width: 36px;
-    height: 20px;
+    border: var(--vol-thumb-border);
+    width: var(--vol-thumb-width);
+    height: var(--vol-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -278,16 +290,16 @@ body {
 
 /* ms */
 .volume-slider::-ms-thumb {
-    border: 2px solid var(--color-dark);
-    width: 36px;
-    height: 20px;
+    border: var(--vol-thumb-border);
+    width: var(--vol-thumb-width);
+    height: var(--vol-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
 }
 
 .full-meter {
-    margin: 0 auto;
+    margin: 0;
     appearance: none;
     z-index: 10;
 }
@@ -467,9 +479,9 @@ body {
 /* Chrome, Safari, Edge, and Opera */
 .bpm-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    border: 2px solid var(--color-dark);
-    width: 20px;
-    height: 36px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -477,9 +489,9 @@ body {
 
 /* Firefox */
 .bpm-slider::-moz-range-thumb {
-    border: 2px solid var(--color-dark);
-    width: 20px;
-    height: 36px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -487,9 +499,9 @@ body {
 
 /* ms */
 .bpm-slider::-ms-thumb {
-    border: 2px solid var(--color-dark);
-    width: 20px;
-    height: 36px;
+    border: var(--pan-thumb-border);
+    width: var(--pan-thumb-width);
+    height: var(--pan-thumb-height);
     border-radius: 6px;
     background: var(--color-bright);
     cursor: pointer;
@@ -577,8 +589,6 @@ body {
 .bar.vertical {
     width: var(--bar-width);
     writing-mode: vertical-lr;
-    box-sizing: border-box;
-    margin: 0px 15px;
 }
 
 .bar {
@@ -694,6 +704,10 @@ body {
 
 .d-inline-block {
     display: inline-block;
+}
+
+.space-evenly {
+    justify-content: space-evenly;
 }
 
 .center {

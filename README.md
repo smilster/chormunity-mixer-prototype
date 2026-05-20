@@ -9,7 +9,7 @@
 - might not decode m4a files -> mp3s work
 
 ### old iPhones, Safari, Opera
-- volume-slider-thumbs are a bit out of place and volume cannot be changes -> layout might be defined
+- issues with vertical `<input>` or `writing-mode: lr` -> needs to be replaced by custom volume slider div 
 
 ### Linux, Chromium, Firefox 
 
