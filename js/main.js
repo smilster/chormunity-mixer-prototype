@@ -31,9 +31,7 @@ const DEFAULT_SONG_ID = "hans"
 await Song.fromSongDatabase("hans")
 await Song.fromSongDatabase("dontStop")
 await Song.fromSongDatabase("baraye")
-// await Song.fromSongDatabase("baraye-m4a")
 await Song.fromSongDatabase("schief")
-// await Song.fromSongDatabase("schief_piano_web")
 
 export let activeSong = null;
 export let playbackRate = 1;
