@@ -346,7 +346,7 @@ body {
 
 .timeline-hover-label {
     transform: translateX(-50%);
-    top: -28px;
+    top: -23px;
     pointer-events: none;
     z-index: 10;
     display: none;
@@ -388,11 +388,11 @@ body {
 }
 
 .loop-label.loop-start {
-    bottom: -21px; /* above timeline */
+    bottom: -17px; /* above timeline */
     transform: translateX(-110%);
 }
 .loop-label.loop-end {
-    bottom: -21px; /* BELOW timeline */
+    bottom: -17px; /* BELOW timeline */
     transform: translateX(10%);
 }
 
