@@ -317,7 +317,7 @@ body {
 .progress-bar {
     transform-origin: bottom;
     transform: scaleY(0);
-    transition: transform 0.25s ease-in, background-color 0.1s linear;
+    transition: transform 0.25s linear, background-color 0.1s linear;
     /* Cross-browser hardware acceleration */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;

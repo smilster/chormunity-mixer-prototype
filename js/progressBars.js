@@ -52,28 +52,24 @@ function updateUIStyles(elements, progress, state) {
 
     switch (state) {
         case "DOWNLOADING":
-            progressBar.style.transition = "none";
             progressBar.style.transform = `scaleY(${progress})`;
             setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
             setClasses(label, ["green"], ["gray", "bright", "blue", "red"]);
             break;
 
         case "DECODING":
-            progressBar.style.transition = "transform 0.25s ease-out, background-color 0.1s linear";
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-bright", "shadow-bright"], ["bg-green", "shadow-green", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
             setClasses(label, ["bright"], ["green", "gray", "blue", "red"]);
             break;
 
         case "READY":
-            progressBar.style.transition = "transform 0.25s ease-out, background-color 0.1s linear";
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-blue", "shadow-blue"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-red", "shadow-red"]);
             setClasses(label, ["blue"], ["green", "gray", "bright", "red"]);
             break;
 
         case "ERROR":
-            progressBar.style.transition = "none";
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-red", "shadow-red"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-blue", "shadow-blue"]);
             setClasses(label, ["red"], ["green", "gray", "bright", "blue"]);
@@ -81,7 +77,6 @@ function updateUIStyles(elements, progress, state) {
 
         case "PENDING":
         default:
-            progressBar.style.transition = "none";
             progressBar.style.transform = "scaleY(0)";
             setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
             setClasses(label, ["gray"], ["green", "bright", "blue", "red"]);
