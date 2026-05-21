@@ -43,6 +43,9 @@ createSongSelector(choirMixerContainer);
 
 
 export async function selectSong(songID, onProgress) {
+    // If selected song is identical with active Song, do nothing
+    if (activeSong && songs.get(songID) === activeSong) return;
+
     transportControls.style.display = "none";
     timelineControls.style.display = 'none';
 
@@ -55,17 +58,15 @@ export async function selectSong(songID, onProgress) {
     }
 
 
-    // If selected song is identical with active Song, do nothing
-    if (songs.get(songID) === activeSong) {
-        return;
-    }
-
-    // If there's an active song currently downloading, cancel it first!
+    // If there's an active song currently cancel everything it first!
     if (activeSong) {
-
         cancelLoading();
-        await transportStop();
+
+
         activeSong.disconnect(); // Ensure dispose cleans up references
+
+        transportStop();
+
     }
 
     // Now set activeSong
@@ -78,7 +79,7 @@ export async function selectSong(songID, onProgress) {
     const strips = initializeMixer(activeSong);
 
     if (activeSong.isLoaded === true) {
-        finalizeControls(0)
+        finalizeControls()
         return;
     }
 
@@ -87,7 +88,7 @@ export async function selectSong(songID, onProgress) {
         await loadBuffersAndUpdateProgressBars(activeSong, strips, onProgress);
 
         // This ONLY runs if loadSongBuffers successfully finishes without being aborted
-        finalizeControls(500)
+        finalizeControls()
     } catch (error) {
         if (error.name === 'AbortError') {
             console.log("Previous song loading successfully aborted. Stopping setup lifecycle.");
@@ -102,12 +103,14 @@ function finalizeControls(delay) {
     activeSong.connect();
     configureTimeLine();
     resetBPMControls();
-    setTimeout(() => {
-        createTrackControls(activeSong);
-        transportControls.style.display = "";
-        timelineControls.style.display = "";
-    }, delay)
+    createTrackControls(activeSong);
+    transportControls.style.display = "";
+    timelineControls.style.display = "";
 
+}
+
+function delay(ms) {
+    return new Promise(res => setTimeout(res, ms));
 }
 
 function configureTransport() {

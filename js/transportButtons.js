@@ -55,7 +55,7 @@ export async function togglePlayback() {
 
     // Toggle Transport state
     if (Tone.getTransport().state === "started") {
-        await transportPause()
+        transportPause()
     } else {
         await transportPlay()
     }
@@ -67,16 +67,16 @@ export async function transportPlay() {
     playButtonSymbol.classList.remove("play-btn");
 }
 
-export async function transportPause() {
-    await Tone.getTransport().pause();
+export function transportPause() {
+    Tone.getTransport().pause();
     playButtonSymbol.classList.remove("pause-btn");
     playButtonSymbol.classList.add("play-btn");
 }
 
-export async function transportStop() {
-    await Tone.getTransport().stop();
+export function transportStop() {
+    Tone.getTransport().pause();
     playButtonSymbol.classList.remove("pause-btn");
     playButtonSymbol.classList.add("play-btn");
-    resetLoop(0);
+    resetLoop();
     Tone.getTransport.seconds=0;
 }

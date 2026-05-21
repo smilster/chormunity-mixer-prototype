@@ -106,6 +106,7 @@ export class Song {
 
 
     connect(){
+        Tone.Transport.cancel();
         this.tracks.forEach((track) => {
             track.connect();
         })

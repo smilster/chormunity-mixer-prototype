@@ -226,7 +226,7 @@ export function resetLoop() {
     loopStartLabel.style.display = "none"
     loopEndLabel.style.display = "none";
 
-
+    Tone.getTransport().seconds = 0;
     Tone.getTransport().loopStart = 0;
     Tone.getTransport().loopEnd = duration;
 }

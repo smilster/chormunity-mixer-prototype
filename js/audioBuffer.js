@@ -1,9 +1,9 @@
 // audioBuffer.js
 
 import {
-    clearProgress as clearUIDOM,
-    createProgress as createUIDOMElement,
-    updateProgress as renderUIUpdate
+    clearProgress,
+    createProgress,
+    updateProgress
 } from "./progressBars.js";
 
 // Global tracking variables
@@ -73,15 +73,15 @@ function initializeProgressTrackingState(song) {
    ========================================== */
 
 function renderInitialUIStructure(song, strips) {
-    clearUIDOM();
+    clearProgress();
     strips.forEach((strip, index) => {
-        createUIDOMElement(index, strip);
+        createProgress(index, strip);
 
         const track = song.tracks[index];
         if (track && track.buffer) {
-            renderUIUpdate(index, 1, "READY");
+            updateProgress(index, 1, "READY");
         } else {
-            renderUIUpdate(index, 0, "PENDING");
+            updateProgress(index, 0, "PENDING");
         }
     });
 }
@@ -89,16 +89,16 @@ function renderInitialUIStructure(song, strips) {
 function syncUIOnPipelineFailure(song) {
     song.tracks.forEach((track, index) => {
         if (track.buffer) {
-            renderUIUpdate(index, 1, "READY");
+            updateProgress(index, 1, "READY");
         } else {
-            renderUIUpdate(index, 0, "PENDING");
+            updateProgress(index, 0, "PENDING");
         }
     });
 }
 
 function markWholeSongReady(song, onProgressCallback) {
     song.tracks.forEach((track, index) => {
-        renderUIUpdate(index, 1, "READY");
+        updateProgress(index, 1, "READY");
         onProgressCallback?.(track.id, 1, 1, "READY");
     });
 }
@@ -116,6 +116,14 @@ async function runConcurrentDownloads(song, signal, onProgressCallback) {
 
     await Promise.all(workers);
     assertSignalLiveness(signal);
+
+    //  hold READY state before UI transitions / song activation
+    try {
+        await delay(500, signal);
+    } catch (e) {
+        if (e.name === "AbortError") return;
+        throw e;
+    }
 }
 
 function finalizeSongCompilation(song) {
@@ -239,7 +247,7 @@ function broadcastTrackProgress(track, trackIndex, trackValue, phase, outputCall
     recalculateMetricAverages();
 
     // Direct, local UI synchronization bypasses any external callback bugs
-    renderUIUpdate(trackIndex, trackValue, phase);
+    updateProgress(trackIndex, trackValue, phase);
 
     // Also fire the external callback safely using track parameters for any global headers
     outputCallback?.(track.id, trackValue, overallProgress, phase);
@@ -259,4 +267,22 @@ function assertSignalLiveness(signal) {
     if (signal && signal.aborted) {
         throw new DOMException("The loading task has been explicitly terminated.", "AbortError");
     }
+}
+
+function delay(ms, signal) {
+    return new Promise((resolve, reject) => {
+        const id = setTimeout(resolve, ms);
+
+        if (signal) {
+            if (signal.aborted) {
+                clearTimeout(id);
+                return reject(new DOMException("Aborted", "AbortError"));
+            }
+
+            signal.addEventListener("abort", () => {
+                clearTimeout(id);
+                reject(new DOMException("Aborted", "AbortError"));
+            }, { once: true });
+        }
+    });
 }
