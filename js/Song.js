@@ -42,9 +42,12 @@ export class Song {
             this.timeSignature = DEFAULT_TIME_SIGNATURE;
         }
 
+       if (songConfig.startBar === undefined) {
+           this.startBar = DEFAULT_START_BAR;
+       } else {
+           this.startBar = parseFloat(songConfig.startBar);
+       }
 
-
-        this.startBar = songConfig.startBar.toString() ? parseFloat(songConfig.startBar) : DEFAULT_START_BAR;
 
 
         // Map and normalize the incoming tracks array

@@ -67,14 +67,14 @@ export async function transportPlay() {
     playButtonSymbol.classList.remove("play-btn");
 }
 
-export function transportPause() {
-    Tone.getTransport().pause();
+export async function transportPause() {
+    await Tone.getTransport().pause();
     playButtonSymbol.classList.remove("pause-btn");
     playButtonSymbol.classList.add("play-btn");
 }
 
-export function transportStop() {
-    Tone.getTransport().stop();
+export async function transportStop() {
+    await Tone.getTransport().stop();
     playButtonSymbol.classList.remove("pause-btn");
     playButtonSymbol.classList.add("play-btn");
     resetLoop(0);

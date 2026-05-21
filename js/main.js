@@ -2,13 +2,12 @@
 
 
 import {Song, songs} from "./Song.js";
-// import {createSongSelector, songSelector} from "./songSelector.js";
+import {createSongSelector} from "./songSelector.js";
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
-import {updateProgress, createProgress, clearProgress} from "./progressBars.js";
-import {loadBuffers, cancelLoading} from "./audioBuffer.js";
+import {cancelLoading, loadBuffersAndUpdateProgressBars} from "./audioBuffer.js";
 import {resetLoop, configureTimeLine, updateTimelineMarker} from "./timeline.js";
-import {updatePositionDisplay, updateTimeDisplay} from "./transportDisplays.js";
+import {updatePositionDisplay} from "./transportDisplays.js";
 
 import {resetBPMControls} from "./bpmControls.js";
 import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
@@ -28,10 +27,10 @@ Tone.context.updateInterval = 0.03
 const DEFAULT_SONG_ID = "dontStop"
 
 // load some songs from database (saved in 'songs' directory
-// await Song.fromSongDatabase("hans")
+await Song.fromSongDatabase("hans")
 await Song.fromSongDatabase("dontStop")
-// await Song.fromSongDatabase("baraye")
-// await Song.fromSongDatabase("schief")
+await Song.fromSongDatabase("baraye")
+await Song.fromSongDatabase("schief")
 
 export let activeSong = null;
 export let playbackRate = 1;
@@ -40,7 +39,7 @@ const choirMixerContainer = document.getElementById("choir-mixer");
 choirMixerContainer.classList.add("flex-column", "w-90", "center");
 
 
-// createSongSelector(choirMixerContainer);
+createSongSelector(choirMixerContainer);
 
 
 export async function selectSong(songID, onProgress) {
@@ -65,7 +64,7 @@ export async function selectSong(songID, onProgress) {
     if (activeSong) {
 
         cancelLoading();
-        transportStop();
+        await transportStop();
         activeSong.disconnect(); // Ensure dispose cleans up references
     }
 
@@ -120,24 +119,7 @@ function configureTransport() {
 }
 
 
-async function loadBuffersAndUpdateProgressBars(song, strips, onProgress) {
-    clearProgress();
 
-    strips.forEach((strip, id) => {
-        createProgress(id, strip);
-    });
-
-    try {
-        // Await the lower-level buffer utility
-        await loadBuffers(song, (id, trackProgress, songProgress, stateString) => {
-            onProgress?.(id, trackProgress, songProgress, stateString);
-            updateProgress(id, trackProgress, stateString);
-        });
-    } catch (error) {
-        // We must rethrow the error so selectSong knows loading failed/aborted!
-        throw error;
-    }
-}
 
 function updateSlowUI() {
     if (activeSong && activeSong.isLoaded) {
@@ -168,7 +150,7 @@ export function updateTempo(newPlaybackRate) {
 
 // select song from url-parameters
 
-async function selectSongFromUrl() {
+async function selectSongFromUrlParameter() {
     const params = new URLSearchParams(window.location.search);
     let songID = params.get("song") ? params.get("song") : DEFAULT_SONG_ID;
     await selectSong(songID)
@@ -178,4 +160,4 @@ async function selectSongFromUrl() {
 updateFastUI();
 updateSlowUI();
 
-await selectSongFromUrl();
+await selectSongFromUrlParameter();

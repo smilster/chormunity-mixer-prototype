@@ -1,83 +1,95 @@
-// This cache will store the element references for each channel ID
-let progressCache = {};
+// progressBars.js
 
+/** @type {Object<number, {progressBar: HTMLElement, label: HTMLElement}>} */
+let progressCache = {};
 
 export function clearProgress() {
     progressCache = {};
 }
 
 export function createProgress(channelId, channelContent) {
-
-    // Check if we already have the elements cached for this specific channel ID
-    if (!progressCache[channelId]) {
-
-        // Clear old static content only on the very first initialization
-        channelContent.innerHTML = "";
-
-        //  Create the wrapper
-        const fullProgressBar = document.createElement("div");
-        fullProgressBar.className = "bar vertical flex-column flex-grow border round bg-dark";
-
-
-        //  Create the actual progress filler
-        const progressBar = document.createElement("div");
-        progressBar.className = "progress-bar w-100 h-100 bg-green shadow-green round";
-
-        //  Create the text label
-        const label = document.createElement("div");
-        label.className = "label small gray color-transition";
-
-        // Assemble the DOM structure
-        fullProgressBar.appendChild(progressBar);
-
-        channelContent.appendChild(fullProgressBar);
-        channelContent.appendChild(label);
-
-        // 5. Store references in our cache array/object using the ID as the key
-        progressCache[channelId] = {
-            progressBar: progressBar,
-            label: label,
-        };
+    if (progressCache[channelId]) {
+        updateLabelText(channelId, "PENDING");
+        return;
     }
 
-    // Update the initial state text using the cached reference
-    progressCache[channelId].label.innerText = "PENDING";
+    channelContent.innerHTML = "";
+
+    const fullProgressBar = document.createElement("div");
+    fullProgressBar.className = "bar vertical flex-column flex-grow border round bg-dark";
+
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar w-100 h-100 bg-green shadow-green round";
+
+    const label = document.createElement("div");
+    label.className = "label small gray color-transition";
+
+    fullProgressBar.appendChild(progressBar);
+    channelContent.appendChild(fullProgressBar);
+    channelContent.appendChild(label);
+
+    progressCache[channelId] = { progressBar, label };
+    updateLabelText(channelId, "PENDING");
 }
 
 export function updateProgress(channelId, progressValue, stateString) {
     const cachedElements = progressCache[channelId];
-
-    // Safety check: if the cache doesn't exist yet, do nothing or wait for createProgress
     if (!cachedElements) return;
 
+    updateLabelText(channelId, stateString);
+    updateUIStyles(cachedElements, progressValue, stateString);
+}
 
-
-
-    // Update the timestamp to the current execution time
-
-    const {  progressBar, label } = cachedElements;
-
-    // Update the text only if it actually changed (saves CPU cycles)
-    if (label.innerText !== stateString) {
-        label.innerText = stateString;
+function updateLabelText(channelId, text) {
+    const cached = progressCache[channelId];
+    if (cached && cached.label.innerText !== text) {
+        cached.label.innerText = text;
     }
+}
 
-    // Calculate percentages and update styles directly via memory reference
-    if (stateString === "DOWNLOADING") {
-        progressBar.style.transform = `scaleY(${progressValue})`;
-        label.classList.add("green")
-        label.classList.remove("gray")
-    } else if (stateString === "DECODING" ) {
-        // Hard lock to 100% complete when finished
-        progressBar.classList.add("bg-bright","shadow-bright")
-        progressBar.classList.remove("bg-green","shadow-green")
-        label.classList.add("bright")
-        label.classList.remove("green")
-        progressBar.style.transform = `scaleY(1)`;
-    } else if (stateString === "READY" ) {
-        progressBar.classList.add("bg-blue","shadow-blue")
-        progressBar.classList.remove("bg-bright","shadow-bright")
-        label.classList.add("blue")
-        label.classList.remove("bright")
+function updateUIStyles(elements, progress, state) {
+    const { progressBar, label } = elements;
+
+    switch (state) {
+        case "DOWNLOADING":
+            progressBar.style.transition = "none";
+            progressBar.style.transform = `scaleY(${progress})`;
+            setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
+            setClasses(label, ["green"], ["gray", "bright", "blue", "red"]);
+            break;
+
+        case "DECODING":
+            progressBar.style.transition = "transform 0.25s ease-out, background-color 0.1s linear";
+            progressBar.style.transform = "scaleY(1)";
+            setClasses(progressBar, ["bg-bright", "shadow-bright"], ["bg-green", "shadow-green", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
+            setClasses(label, ["bright"], ["green", "gray", "blue", "red"]);
+            break;
+
+        case "READY":
+            progressBar.style.transition = "transform 0.25s ease-out, background-color 0.1s linear";
+            progressBar.style.transform = "scaleY(1)";
+            setClasses(progressBar, ["bg-blue", "shadow-blue"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-red", "shadow-red"]);
+            setClasses(label, ["blue"], ["green", "gray", "bright", "red"]);
+            break;
+
+        case "ERROR":
+            progressBar.style.transition = "none";
+            progressBar.style.transform = "scaleY(1)";
+            setClasses(progressBar, ["bg-red", "shadow-red"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-blue", "shadow-blue"]);
+            setClasses(label, ["red"], ["green", "gray", "bright", "blue"]);
+            break;
+
+        case "PENDING":
+        default:
+            progressBar.style.transition = "none";
+            progressBar.style.transform = "scaleY(0)";
+            setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
+            setClasses(label, ["gray"], ["green", "bright", "blue", "red"]);
+            break;
     }
+}
+
+function setClasses(element, classesToAdd, classesToRemove) {
+    classesToRemove.forEach(cls => element.classList.remove(cls));
+    classesToAdd.forEach(cls => element.classList.add(cls));
 }

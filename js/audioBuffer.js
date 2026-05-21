@@ -1,177 +1,262 @@
-// audioBufferScript.js
+// audioBuffer.js
 
+import {
+    clearProgress as clearUIDOM,
+    createProgress as createUIDOMElement,
+    updateProgress as renderUIUpdate
+} from "./progressBars.js";
+
+// Global tracking variables
 export const progresses = new Map();
 export let overallProgress = 0;
 export let abortController = null;
 
-// update download state each update_ms
-
-const UPDATE_MS = 60;
+const THROTTLE_WINDOW_MS = 250;
 
 /**
- * Loads all audio files for this song into buffers.
- * This ensures the music is ready before the mixer tries to play it.
+ * Orchestrates the full UI creation, track download lifecycle management,
+ * and safely clears active background execution frames.
  */
-export async function loadBuffers(song, onProgress) {
-    if (song.isLoaded) return;
+export async function loadBuffersAndUpdateProgressBars(song, strips, onProgressCallback) {
+    terminateActiveTransfers();
 
-    console.log(`Loading buffers for: ${song.title}...`);
+    initializeProgressTrackingState(song);
+    renderInitialUIStructure(song, strips);
 
-    resetLoadingState();
-    const signal = createAbortController();
-
-    const promises = song.tracks.map(track =>
-        loadTrack(track, signal, onProgress)
-    );
+    if (song.isLoaded) {
+        markWholeSongReady(song, onProgressCallback);
+        return;
+    }
 
     try {
-        await Promise.all(promises);
-
-        ensureNotAborted(signal);
-
-        song.isLoaded = true;
-        song.calculateMaxDuration();
-        console.log(`All buffers ready for: ${song.title}`);
+        const signal = initCancellationSignal();
+        await runConcurrentDownloads(song, signal, onProgressCallback);
+        finalizeSongCompilation(song);
     } catch (error) {
-        console.log(`Loading cycle interrupted or failed for: ${song.title}`);
-        song.isLoaded = false;
-        throw error; // Propagates the exception up to the selection chain
+        syncUIOnPipelineFailure(song);
+        handleGlobalPipelineFailure(song, error);
     }
 }
 
-async function loadTrack(track, signal, onProgress) {
-    if (track.buffer) return;
+export function cancelLoading() {
+    terminateActiveTransfers();
+}
 
-    try {
-        const { chunks } = await downloadTrack(track, signal, onProgress);
+/* ==========================================
+   STATE MANAGEMENT & CANCELLATION
+   ========================================== */
 
-        const audioBuffer = await decodeChunksToBuffer(
-            chunks,
-            track,
-            signal,
-            onProgress
-        );
-
-        track.buffer = audioBuffer;
-        // markTrackReady(track, onProgress);
-        updateProgress(track,1,onProgress,"READY");
-    } catch (error) {
-        handleTrackError(track, error);
+function terminateActiveTransfers() {
+    if (abortController) {
+        abortController.abort();
+        abortController = null;
     }
-}
-
-function updateProgress(track, progress, onProgress, phase) {
-    progresses.set(track.label, progress);
-    calculateOverallProgress(track, onProgress);
-    onProgress?.(
-        track.id,
-        progress,
-        overallProgress,
-        phase
-    );
-}
-
-
-function calculateOverallProgress(track, onProgress) {
-    const values = [...progresses.values()];
-    overallProgress = values.reduce((a, b) => a + b, 0) / values.length;
-}
-
-
-async function downloadTrack(track, signal, onProgress) {
-    const response = await fetch(track.url, {
-        signal,
-        cache: 'force-cache'
-    });
-
-    const total = Number(response.headers.get("Content-Length")) || 0;
-    const reader = response.body.getReader();
-    const chunks = [];
-    let received = 0;
-
-    // Keep track of the last timestamp an update was allowed through
-    let lastUpdateTime = 0;
-
-    while (true) {
-        if (signal.aborted) {
-            throw new DOMException("Aborted", "AbortError");
-        }
-
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        chunks.push(value);
-        received += value.length;
-
-        const progress = total ? received / total : 0;
-        const now = performance.now();
-
-        if (now - lastUpdateTime >= UPDATE_MS) {
-            updateProgress(track, progress, onProgress, "DOWNLOADING");
-            lastUpdateTime = now;
-        }
-    }
-
-    return { chunks, total, received };
-}
-
-function handleTrackError(track, error) {
-    if (error.name === 'AbortError') {
-        console.log(`Download aborted for track: ${track.label}`);
-    } else {
-        console.error(`Error loading track ${track.label}:`, error);
-    }
-    throw error; // Rethrowing forces Promise.all to break instantly
-}
-
-function ensureNotAborted(signal) {
-    if (signal.aborted) {
-        throw new DOMException("Aborted", "AbortError");
-    }
-}
-
-export function mergeChunks(chunks) {
-    const size = chunks.reduce((acc, c) => acc + c.length, 0);
-    const audioData = new Uint8Array(size);
-
-    let offset = 0;
-    for (const chunk of chunks) {
-        audioData.set(chunk, offset);
-        offset += chunk.length;
-    }
-
-    return audioData;
-}
-
-async function decodeChunksToBuffer(chunks, track, signal, onProgress) {
-    onProgress?.(track.id, 1, overallProgress, "DECODING");
-
-    const audioData = mergeChunks(chunks);
-    ensureNotAborted(signal);
-
-    const audioBuffer = await Tone.getContext()
-        .rawContext
-        .decodeAudioData(audioData.buffer);
-
-    const toneBuffer = new Tone.ToneAudioBuffer();
-    toneBuffer.set(audioBuffer);
-
-    return toneBuffer;
-}
-
-function createAbortController() {
-    abortController = new AbortController();
-    return abortController.signal;
-}
-
-function resetLoadingState() {
     progresses.clear();
     overallProgress = 0;
 }
 
-export function cancelLoading() {
-    if (abortController) {
-        abortController.abort();
+function initCancellationSignal() {
+    abortController = new AbortController();
+    return abortController.signal;
+}
+
+function initializeProgressTrackingState(song) {
+    song.tracks.forEach(track => {
+        const initialProgress = track.buffer ? 1 : 0;
+        progresses.set(track.label, initialProgress);
+    });
+    recalculateMetricAverages();
+}
+
+/* ==========================================
+   UI SYNCHRONIZATION
+   ========================================== */
+
+function renderInitialUIStructure(song, strips) {
+    clearUIDOM();
+    strips.forEach((strip, index) => {
+        createUIDOMElement(index, strip);
+
+        const track = song.tracks[index];
+        if (track && track.buffer) {
+            renderUIUpdate(index, 1, "READY");
+        } else {
+            renderUIUpdate(index, 0, "PENDING");
+        }
+    });
+}
+
+function syncUIOnPipelineFailure(song) {
+    song.tracks.forEach((track, index) => {
+        if (track.buffer) {
+            renderUIUpdate(index, 1, "READY");
+        } else {
+            renderUIUpdate(index, 0, "PENDING");
+        }
+    });
+}
+
+function markWholeSongReady(song, onProgressCallback) {
+    song.tracks.forEach((track, index) => {
+        renderUIUpdate(index, 1, "READY");
+        onProgressCallback?.(track.id, 1, 1, "READY");
+    });
+}
+
+/* ==========================================
+   CONCURRENT DOWNLOAD PIPELINE
+   ========================================== */
+
+async function runConcurrentDownloads(song, signal, onProgressCallback) {
+    console.log(`Loading buffers for: ${song.title}...`);
+
+    const workers = song.tracks.map((track, index) =>
+        processSingleTrackLifecycle(track, index, signal, onProgressCallback)
+    );
+
+    await Promise.all(workers);
+    assertSignalLiveness(signal);
+}
+
+function finalizeSongCompilation(song) {
+    song.isLoaded = true;
+    song.calculateMaxDuration();
+    console.log(`All buffers synchronized for: ${song.title}`);
+}
+
+function handleGlobalPipelineFailure(song, error) {
+    song.isLoaded = false;
+    if (error.name === 'AbortError') {
+        console.log(`Download cancellation cycle executed for: ${song.title}`);
+    } else {
+        console.error(`Critical error caught on pipeline orchestration for ${song.title}:`, error);
     }
-    resetLoadingState();
+    throw error;
+}
+
+/* ==========================================
+   INDIVIDUAL TRACK LIFECYCLE
+   ========================================== */
+
+async function processSingleTrackLifecycle(track, trackIndex, signal, onProgressCallback) {
+    if (track.buffer) {
+        broadcastTrackProgress(track, trackIndex, 1, "READY", onProgressCallback);
+        return;
+    }
+
+    try {
+        const chunks = await downloadTrackStream(track, trackIndex, signal, onProgressCallback);
+        const compiledRawData = consolidateChunks(chunks);
+
+        assertSignalLiveness(signal);
+
+        track.buffer = await decodeRawAudioData(compiledRawData, track, trackIndex, onProgressCallback);
+        broadcastTrackProgress(track, trackIndex, 1, "READY", onProgressCallback);
+    } catch (trackError) {
+        if (trackError.name !== 'AbortError') {
+            broadcastTrackProgress(track, trackIndex, progresses.get(track.label) || 0, "ERROR", onProgressCallback);
+            console.error(`Track Processing failure inside sequence ${track.label}:`, trackError);
+        }
+        throw trackError;
+    }
+}
+
+/* ==========================================
+   NETWORK AND STREAMING
+   ========================================== */
+
+async function downloadTrackStream(track, trackIndex, signal, onProgressCallback) {
+    const response = await fetch(track.url, { signal, cache: 'force-cache' });
+    if (!response.ok) {
+        throw new Error(`Server returned unhealthy code: ${response.status}`);
+    }
+
+    const totalByteSize = Number(response.headers.get("Content-Length")) || 0;
+    const streamReader = response.body.getReader();
+
+    return await readStreamLoop(streamReader, track, trackIndex, totalByteSize, signal, onProgressCallback);
+}
+
+async function readStreamLoop(reader, track, trackIndex, totalSize, signal, onProgressCallback) {
+    const segments = [];
+    let processedBytes = 0;
+    let lastThrottledTime = performance.now();
+
+    while (true) {
+        assertSignalLiveness(signal);
+
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        segments.push(value);
+        processedBytes += value.length;
+
+        const dynamicRatio = totalSize ? processedBytes / totalSize : 0;
+        const invocationTime = performance.now();
+
+        if (invocationTime - lastThrottledTime >= THROTTLE_WINDOW_MS || dynamicRatio === 1) {
+            broadcastTrackProgress(track, trackIndex, dynamicRatio, "DOWNLOADING", onProgressCallback);
+            lastThrottledTime = invocationTime;
+        }
+    }
+    return segments;
+}
+
+/* ==========================================
+   AUDIO DECODING & DATA COMPILATION
+   ========================================== */
+
+async function decodeRawAudioData(rawBytes, track, trackIndex, onProgressCallback) {
+    broadcastTrackProgress(track, trackIndex, 0.99, "DECODING", onProgressCallback);
+
+    const audioContext = Tone.getContext().rawContext;
+    const nativeAudioBuffer = await audioContext.decodeAudioData(rawBytes.buffer);
+
+    const toneAudioWrapper = new Tone.ToneAudioBuffer();
+    toneAudioWrapper.set(nativeAudioBuffer);
+
+    return toneAudioWrapper;
+}
+
+function consolidateChunks(chunksArray) {
+    const byteLengthSum = chunksArray.reduce((acc, chunk) => acc + chunk.length, 0);
+    const flattenedBuffer = new Uint8Array(byteLengthSum);
+
+    let writingPointer = 0;
+    for (const dataChunk of chunksArray) {
+        flattenedBuffer.set(dataChunk, writingPointer);
+        writingPointer += dataChunk.length;
+    }
+    return flattenedBuffer;
+}
+
+/* ==========================================
+   MATH & METRIC HELPERS
+   ========================================== */
+
+function broadcastTrackProgress(track, trackIndex, trackValue, phase, outputCallback) {
+    progresses.set(track.label, trackValue);
+    recalculateMetricAverages();
+
+    // Direct, local UI synchronization bypasses any external callback bugs
+    renderUIUpdate(trackIndex, trackValue, phase);
+
+    // Also fire the external callback safely using track parameters for any global headers
+    outputCallback?.(track.id, trackValue, overallProgress, phase);
+}
+
+function recalculateMetricAverages() {
+    const snapshots = [...progresses.values()];
+    if (snapshots.length === 0) {
+        overallProgress = 0;
+        return;
+    }
+    const sum = snapshots.reduce((accumulator, item) => accumulator + item, 0);
+    overallProgress = sum / snapshots.length;
+}
+
+function assertSignalLiveness(signal) {
+    if (signal && signal.aborted) {
+        throw new DOMException("The loading task has been explicitly terminated.", "AbortError");
+    }
 }
