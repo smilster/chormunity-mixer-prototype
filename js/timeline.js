@@ -18,7 +18,7 @@ let duration = 120;
 let isPointerDown = false;
 let startX = 0;
 let startPos = 0;
-const dragThreshold = 5; // Pixels of movement required to count as a drag
+const dragThreshold = 8; // Pixels of movement required to count as a drag
 
 // Your exported range variables
 export let loopRelativePositionStart = null;
