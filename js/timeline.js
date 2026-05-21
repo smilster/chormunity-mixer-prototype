@@ -97,10 +97,13 @@ function updateLoopRegion() {
 
     let startX = loopRelativePositionStart * width;
     const startSeconds = Tone.Time(loopRelativePositionStart * duration).quantize(loopQuantization);
-    const startPosition = secondsToPosition(startSeconds,0,true);
 
     const endX = loopRelativePositionEnd * width;
     const endSeconds = Tone.Time(loopRelativePositionEnd * duration).quantize(loopQuantization);
+
+    if (startSeconds === endSeconds) return; // prevent loop over 0 seconds
+
+    const startPosition = secondsToPosition(startSeconds,0,true);
     let endPosition = secondsToPosition(endSeconds,-1,true);
 
     const loopWidth = endX - startX
