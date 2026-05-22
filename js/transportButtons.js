@@ -7,7 +7,7 @@ let stopButtonSymbol;
 
 
 
-export function createPlayButton(parentDiv) {
+export function createPlayButton() {
     const playButton = document.createElement("div");
     playButton.classList.add("m-10px","btn");
 
@@ -17,16 +17,16 @@ export function createPlayButton(parentDiv) {
     playButtonSymbol = document.createElement("div");
     playButtonSymbol.classList.add("play-btn","position-absolute");
 
-    playButton.append(circle);
+    playButton.appendChild(circle);
     circle.appendChild(playButtonSymbol);
-    parentDiv.appendChild(playButton);
 
     // 3. Add the click event listener
     playButton.addEventListener("click", togglePlayback)
 
+    return playButton;
 }
 
-export function createStopButton(parentDiv) {
+export function createStopButton() {
     const stopButton = document.createElement("div");
     stopButton.classList.add("m-10px","btn");
 
@@ -35,11 +35,12 @@ export function createStopButton(parentDiv) {
     stopButtonSymbol = document.createElement("div");
     stopButtonSymbol.classList.add("stop-btn","position-absolute");
 
-    stopButton.append(circle);
+    stopButton.appendChild(circle);
     circle.appendChild(stopButtonSymbol);
-    parentDiv.appendChild(stopButton);
 
     stopButton.addEventListener("click",transportStop)
+
+    return stopButton;
 }
 
 

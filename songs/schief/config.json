@@ -1,6 +1,7 @@
 {
     "title": "Schief in jedem Chor",
     "bpm": 92,
+    "startBar": 0,
     "tracks": [
       { "label": "Sopran",
         "filename": "session_Sopran.mp3", "pan": -0.3},

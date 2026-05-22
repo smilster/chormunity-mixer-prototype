@@ -3,6 +3,8 @@
 
 import {Song, songs} from "./Song.js";
 import {createSongSelector} from "./songSelector.js";
+import {createTableSongSelector} from "./tableSongSelector.js";
+
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
 import {cancelLoading, loadBuffersAndUpdateProgressBars} from "./audioBuffer.js";
@@ -35,12 +37,32 @@ await Song.fromSongDatabase("schief")
 export let activeSong = null;
 export let playbackRate = 1;
 
-const choirMixerContainer = document.getElementById("choir-mixer");
-choirMixerContainer.classList.add("flex-column", "w-90", "center");
 
 
-createSongSelector(choirMixerContainer);
+const   choirMixerContainer = initializeLayout('choir-mixer')
 
+
+function createFlexGap(){
+    const flexGap = document.createElement("div");
+    flexGap.id = "flex-grow";
+    return flexGap;
+}
+
+function initializeLayout(parentDivID) {
+
+    // choir-mixer div as defined in html
+    const choirMixerContainer = document.getElementById(parentDivID);
+    choirMixerContainer.className = "flex-column center w-100 minh-1vw";
+
+
+
+
+    choirMixerContainer.appendChild(createFlexGap());
+    choirMixerContainer.appendChild(createTableSongSelector());
+    choirMixerContainer.appendChild(createFlexGap());
+
+    return  choirMixerContainer;
+}
 
 export async function selectSong(songID, onProgress) {
     // If selected song is identical with active Song, do nothing
@@ -52,9 +74,9 @@ export async function selectSong(songID, onProgress) {
     // if there is no active song, this is the first time song select is called
     // create empty Mixer and empty transport
     if (!activeSong) {
-        createMixer(choirMixerContainer);
-        createTimelineControls(choirMixerContainer);
-        createTransportControls(choirMixerContainer);
+        choirMixerContainer.prepend(createTransportControls())
+        choirMixerContainer.prepend(createTimelineControls())
+        choirMixerContainer.prepend(createMixer())
     }
 
 
@@ -109,9 +131,6 @@ function finalizeControls(delay) {
 
 }
 
-function delay(ms) {
-    return new Promise(res => setTimeout(res, ms));
-}
 
 function configureTransport() {
     Tone.getTransport().bpm.value = activeSong.bpm;
@@ -163,4 +182,4 @@ async function selectSongFromUrlParameter() {
 updateFastUI();
 updateSlowUI();
 
-await selectSongFromUrlParameter();
+// await selectSongFromUrlParameter();

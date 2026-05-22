@@ -1,10 +1,10 @@
 import {positionToSeconds, secondsToPosition, secondsToTimeFormat} from "./transportControl.js";
-import {activeSong, playbackRate} from "./main.js";
+import {activeSong} from "./main.js";
 
 let positionDisplay;
 let timeDisplay;
 
-export function createPositionDisplay(parentDiv) {
+export function createPositionDisplay() {
 
     const wrapper = document.createElement("div");
     wrapper.className = "m-10px minw-100px position-relative h-50px";
@@ -19,8 +19,6 @@ export function createPositionDisplay(parentDiv) {
     const positionDisplayLabel = document.createElement("div");
     positionDisplayLabel.className = "position-absolute label small lighter-gray";
     positionDisplayLabel.style.top = "-20px"
-    // positionDisplayLabel.style.left = "50px"
-    // positionDisplayLabel.style.transform = "translateX(-50%)"
     positionDisplayLabel.style.zIndex = "100";
     positionDisplayLabel.innerHTML = `position`
 
@@ -28,7 +26,7 @@ export function createPositionDisplay(parentDiv) {
     wrapper.appendChild(positionDisplay);
     wrapper.appendChild(positionDisplayLabel);
 
-    parentDiv.appendChild(wrapper);
+    return wrapper;
 
 }
 
@@ -37,7 +35,7 @@ export function updatePositionDisplay() {
     positionDisplay.innerHTML = `${position[0] + activeSong.startBar}:${position[1]+1}`;
 }
 
-export function createTimeDisplay(parentDiv) {
+export function createTimeDisplay() {
     const wrapper = document.createElement("div");
     wrapper.className = "m-10px minw-100px position-relative h-50px";
 
@@ -48,15 +46,14 @@ export function createTimeDisplay(parentDiv) {
     const timeDisplayLabel = document.createElement("div");
     timeDisplayLabel.className = "position-absolute label small lighter-gray";
     timeDisplayLabel.style.top = "-20px"
-    // timeDisplayLabel.style.left = "50px"
-    // timeDisplayLabel.style.transform = "translateX(-50%)"
     timeDisplayLabel.style.zIndex = "100";
     timeDisplayLabel.innerHTML = `time`
 
     wrapper.appendChild(timeDisplay);
     wrapper.appendChild(timeDisplayLabel);
 
-    parentDiv.appendChild(wrapper);
+    return wrapper;
+
 }
 
 export function updateTimeDisplay() {

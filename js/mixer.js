@@ -13,17 +13,19 @@ const DB_MIN_METER = -45;
 const DB_MAX_METER = 0;
 const DB_RANGE_METER = DB_MAX_METER - DB_MIN_METER;
 
-export function createMixer(parentDiv) {
+export function createMixer() {
     mixer = document.createElement("div");
     mixer.id = "mixer";
-    mixer.className = "container flex-wrap border round center";
-    parentDiv.appendChild(mixer);
+    mixer.className = "flex-wrap container border round center";
+
+    return mixer;
 }
 export function initializeMixer(song) {
     channelContents = [];
     meters = [];
     // clear mixer
     mixer.innerHTML = '';
+
 
 
     song.tracks.forEach(track => {
@@ -107,7 +109,7 @@ function createVolumeControl(track) {
 
 
     const sliderMeterWrapper = document.createElement("div");
-    sliderMeterWrapper.className = ' flex-row w-100 space-evenly'
+    sliderMeterWrapper.className = ' flex-row w-100 space-around';
 
 
     const volumeSlider = document.createElement("input")
@@ -128,7 +130,6 @@ function createVolumeControl(track) {
             track.volume.volume.rampTo(parseFloat(newVol),0.03);
         }
     })
-
 
 
     const fullMeter = document.createElement("div");

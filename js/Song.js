@@ -65,6 +65,7 @@ export class Song {
         this.tracks = []
         this.createTracks();
 
+
         this.numTracks=songConfig.tracks.length;
 
 
@@ -124,6 +125,8 @@ export class Song {
         });
 
     }
+
+
 
 }
 

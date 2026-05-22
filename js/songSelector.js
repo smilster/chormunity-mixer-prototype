@@ -6,7 +6,7 @@ export let songSelector = null;
  * Creates the initial empty select element, sets up its event listener,
  * and appends it to the container. Run this ONCE during initialization.
  */
-export function createSongSelector(parentDiv) {
+export function createSongSelector() {
     songSelector = document.createElement("select");
     songSelector.id = "song-select";
 
@@ -14,10 +14,11 @@ export function createSongSelector(parentDiv) {
         await selectSong(event.target.value);
     });
 
-    parentDiv.appendChild(songSelector);
 
     //  Run an initial update
     updateSongSelector();
+
+    return songSelector;
 }
 
 

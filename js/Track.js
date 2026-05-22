@@ -38,6 +38,11 @@ export class Track {
             smoothing: 0.2
         });
 
+
+
+
+
+
         this.state = "initialized";
     }
 
@@ -159,4 +164,9 @@ export class Track {
 
         return String(trackConfig.id);
     }
+
+
+
+
+
 }

@@ -6,43 +6,31 @@ import {createPositionDisplay} from "./transportDisplays.js";
 export const transportControls = document.createElement("div");
 export const timelineControls= document.createElement("div");
 
-const CONTAINER_CLASS_NAME = "container border round w-90 maxw-1200px  center flex-row"
+const CONTAINER_CLASS = "container border round w-80 maxw-1200px  center flex-row "
 
-export function createTransportControls(parentDiv) {
-    transportControls.className = CONTAINER_CLASS_NAME;
-
-    createPositionDisplay(transportControls);
-    createPlayButton(transportControls);
-    createStopButton(transportControls);
-
-    createFlexGap(transportControls)
+export function createTransportControls() {
 
 
-    createBpmResetButton(transportControls);
-    createBpmSlider(transportControls);
-    createBpmDisplay(transportControls);
+    transportControls.className = CONTAINER_CLASS;
+
+    transportControls.appendChild(createPositionDisplay());
+    transportControls.appendChild(createPlayButton());
+    transportControls.appendChild(createStopButton());
 
 
+    transportControls.appendChild(createBpmResetButton())
+    transportControls.appendChild(createBpmSlider())
+    transportControls.appendChild(createBpmDisplay())
 
-    // createTimeDisplay(transportControls)
-    // createPositionDisplay(transportControls);
 
-    // createTimeline(transportControls);
-
-    parentDiv.appendChild(transportControls);
+    return transportControls;
 
 }
 
-export function createTimelineControls(parentDiv) {
-    timelineControls.className = CONTAINER_CLASS_NAME;
+export function createTimelineControls() {
+    timelineControls.className = CONTAINER_CLASS;
     createTimeline(timelineControls);
 
+   return timelineControls;
 
-    parentDiv.appendChild(timelineControls);
-
-}
-
-function createFlexGap(parentDiv){
-    const gap = document.createElement("div");
-    gap.className = "flex-grow"
 }
