@@ -1,20 +1,35 @@
 # Magic Mixer
 
-## chormunity-mixer-prototype
 
-## Known Issues
+### planned features
 
-### Windows 10 with Edge
+- correct transport position display with songs that change timeSignature
+- synthesizer click
+- solo buttons
+- master channel
+- backend build (ffmpeg, rubberband) to autogenerate songs at different tempi (better quality than GrainPlayer)
+- track resolved pitch detection (sounds a bit cpu heavy though)
+
+### Known Issues
+
+
+
+#### Windows 10 with Edge
 
 - might not decode m4a files -> mp3s work
 
-### old iPhones, Safari, Opera
+#### old iPhones, Safari, Opera
 - issues with vertical `<input>` or `writing-mode: lr` -> needs to be replaced by custom volume slider div 
 
-### Linux, Chromium, Firefox 
+#### Linux, Chromium, Firefox 
 
 - initial sound stuttering (perhaps just bad sound card or system audio configurations)
 
-### Apple systems
+    -> apparently gone with new audio buffering
+
+#### Apple devices
 
 - usually don't decode ogg files (-> m4a is the smallest solution, mp3 is also very good)
+
+
+

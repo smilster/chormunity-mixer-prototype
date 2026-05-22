@@ -28,10 +28,10 @@ Tone.context.updateInterval = 0.03
 const DEFAULT_SONG_ID = "dontStop"
 
 // load some songs from database (saved in 'songs' directory
-await Song.fromSongDatabase("hans")
 await Song.fromSongDatabase("dontStop")
 await Song.fromSongDatabase("baraye")
 await Song.fromSongDatabase("schief")
+await Song.fromSongDatabase("hans")
 
 export let activeSong = null;
 export let playbackRate = 1;
