@@ -4,12 +4,14 @@ let mixer;
 let channelContents;
 let meters;
 
+
+
 const DB_MIN_VOLUME = -30;
 const DB_MAX_VOLUME = 6;
 const DB_RANGE_VOLUME = DB_MAX_VOLUME - DB_MIN_VOLUME;
 
 
-const DB_MIN_METER = -45;
+const DB_MIN_METER = -50;
 const DB_MAX_METER = 0;
 const DB_RANGE_METER = DB_MAX_METER - DB_MIN_METER;
 
@@ -53,6 +55,8 @@ export function initializeMixer(song) {
         // save for layer filling, i.e., progress bar and channel controls
         channelContents.push(channelContent);
     });
+
+
     return channelContents;
 }
 //
@@ -182,8 +186,6 @@ export function updateMeters(song){
     song.tracks.forEach((track,id) => {
         const db = track.meter.getValue();
         const percentage = Math.pow(Math.max(Math.min( (db - DB_MIN_METER) / DB_RANGE_METER,1),0),0.5)
-        // console.log(percentage);
-        // console.log(meters)
         if (meters[id]){
             meters[id].style.transform = `scaleY(${percentage})`;
             if (db < -12 ){

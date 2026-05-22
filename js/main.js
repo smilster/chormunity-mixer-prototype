@@ -2,7 +2,7 @@
 
 
 import {Song, songs} from "./Song.js";
-import {createTableSongSelector} from "./songSelector.js";
+import {createTableSongSelector, highlightActiveSong} from "./songSelector.js";
 
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
@@ -25,7 +25,7 @@ Tone.context.updateInterval = 0.03
 
 // set default songID
 
-const DEFAULT_SONG_ID = "dontStop"
+const DEFAULT_SONG_ID = "schief"
 
 // load some songs from database (saved in 'songs' directory
 await Song.fromSongDatabase("dontStop")
@@ -94,6 +94,7 @@ export async function selectSong(songID, onProgress) {
 
     resetLoop();
     activeSong = songs.get(songID);
+    highlightActiveSong(activeSong); // update song selector
 
 
     // Initialize UI mixer elements
@@ -119,7 +120,7 @@ export async function selectSong(songID, onProgress) {
     }
 }
 
-function finalizeControls(delay) {
+function finalizeControls() {
     configureTransport();
     activeSong.connect();
     configureTimeLine();
@@ -181,4 +182,4 @@ async function selectSongFromUrlParameter() {
 updateFastUI();
 updateSlowUI();
 
-// await selectSongFromUrlParameter();
+await selectSongFromUrlParameter();

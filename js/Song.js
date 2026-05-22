@@ -9,6 +9,8 @@ import {Track} from "./Track.js";
 const DEFAULT_TIME_SIGNATURE = [4,4];
 const DEFAULT_START_BAR = 1;
 
+const DEFAULT_MASTER_GAIN = 1;
+
 
 // song database specifications
 const SONG_DATABASE_DIR = 'songs';
@@ -26,7 +28,6 @@ export class Song {
      * @param songConfig JSON file containing the config
      */
     constructor(songConfig) {
-
 
 
         this.id = songConfig.id;
@@ -50,7 +51,9 @@ export class Song {
 
 
 
-        // Map and normalize the incoming tracks array
+        this.masterGain = songConfig.masterGain ? songConfig.masterGain : DEFAULT_MASTER_GAIN;
+
+
         this.trackConfigs = songConfig.tracks;
 
         // assign index, song id and database dir to each track
@@ -65,18 +68,14 @@ export class Song {
         this.tracks = []
         this.createTracks();
 
-
         this.numTracks=songConfig.tracks.length;
-
-
 
         // store duration of song, i.e., it is the duration of the longest track in case of duration mismatch
         this.duration = 0;
 
         this.isLoaded = false;
 
-        // will be triggered in case of song switch during selection
-        // this.abortController = null;
+
     }
 
     /**

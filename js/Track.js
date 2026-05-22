@@ -5,6 +5,8 @@ const DEFAULT_OVERLAP = 0.6 * DEFAULT_GRAIN;
 const DEFAULT_VOL = -15;
 const DEFAULT_PAN = 0;
 
+const METER_SMOOTHING = 0;
+
 export class Track {
 
     constructor(trackConfig) {
@@ -75,7 +77,7 @@ export class Track {
 
 
         this. meter = new Tone.Meter({
-            smoothing: 0.2
+            smoothing: METER_SMOOTHING
         });
 
         // graph:

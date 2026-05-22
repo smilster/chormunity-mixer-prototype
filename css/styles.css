@@ -30,6 +30,7 @@ body {
     --color-light-gray: #2b2b2b;
     --color-gray: #222;
     --color-dark-gray: #181818;
+    --color-darker-gray: #121212;
     --color-dark: #0c0c0c;
 
     --color-border: #333;
@@ -327,7 +328,7 @@ body {
 .meter {
     transform-origin: bottom;
     transform: scaleY(0.0);
-    transition: transform 0.05s ease-out, background-color 0.05s linear;
+    transition: transform 0.033s ease-out, background-color 0.05s ease-in-out;
     /* Cross-browser hardware acceleration */
     /*filter: blur(1px);*/
     backface-visibility: hidden;

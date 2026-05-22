@@ -11,6 +11,7 @@ https://smilster.github.io/chormunity-mixer-prototype
 - master channel
 - backend build (ffmpeg, rubberband) to autogenerate songs at different tempi (better quality than GrainPlayer)
 - track resolved pitch detection (sounds a bit cpu heavy though)
+- add duration (bars:measure) to song selector after track has been loaded
 
 ### Known Issues
 

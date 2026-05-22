@@ -3,6 +3,8 @@ import {selectSong} from "./main.js";
 
 let songSelector;
 
+const songRows = [];
+
 const CONTAINER_CLASS = "container border round maxw-1200px flex-column w-80 center text-left";
 const ITEM_CLASS = "song-selector-item flex-grow lighter-gray w-100 flex-row p-10px cursor-pointer center";
 
@@ -16,6 +18,8 @@ export function createTableSongSelector() {
         // Create the row wrapper
         const songRow = document.createElement("div");
         songRow.className = ITEM_CLASS;
+        songRow.id = song.id;
+        songRows.push(songRow);
 
         const title = document.createElement("div");
         title.className = "minw-300px text-left";
@@ -51,6 +55,15 @@ export function createTableSongSelector() {
     });
 
     return songSelector;
+}
+
+
+export function highlightActiveSong(song){
+    const songRow = document.getElementById(song.id);
+    songRows.forEach((songRow) => {
+        songRow.classList.remove("selected");
+    })
+    songRow.classList.add("selected");
 }
 
 // Background handler that waits for the calculation, then overwrites the innerText
