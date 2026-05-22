@@ -1,9 +1,11 @@
 # Magic Mixer
 
+### Live Demo
+https://smilster.github.io/chormunity-mixer-prototype
 
 ### planned features
 
-- correct transport position display with songs that change timeSignature
+- correct transport position display for songs that change timeSignature
 - synthesizer click
 - solo buttons
 - master channel
