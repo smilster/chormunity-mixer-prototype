@@ -20,12 +20,8 @@ Tone.getContext().rawContext.sampleRate
 Tone.context._latencyHint = "playback";
 Tone.context._lookAhead = 0.06;
 Tone.context.updateInterval = 0.03
-// Tone.getTransport().PPQ = 196;
-//
+// Tone.getTransport().PPQ = 196; // pulse per quarter note, better keep unchanged
 
-// set default songID
-
-const DEFAULT_SONG_ID = "schief"
 
 // load some songs from database (saved in 'songs' directory
 await Song.fromSongDatabase("dontStop")
@@ -174,8 +170,10 @@ export function updateTempo(newPlaybackRate) {
 
 async function selectSongFromUrlParameter() {
     const params = new URLSearchParams(window.location.search);
-    let songID = params.get("song") ? params.get("song") : DEFAULT_SONG_ID;
-    await selectSong(songID)
+    const songID = params.get("song");
+    if (songID && songs.get(songID)) {
+        await selectSong(songID)
+    }
 }
 
 // start gui
