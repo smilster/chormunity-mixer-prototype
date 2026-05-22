@@ -2,8 +2,7 @@
 
 
 import {Song, songs} from "./Song.js";
-import {createSongSelector} from "./songSelector.js";
-import {createTableSongSelector} from "./tableSongSelector.js";
+import {createTableSongSelector} from "./songSelector.js";
 
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
