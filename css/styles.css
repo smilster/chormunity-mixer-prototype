@@ -234,7 +234,6 @@ body {
 
 
 .mixer-channel {
-    background: #222;
     padding: 10px;
     width: 98px;
     height: 300px;
@@ -244,7 +243,7 @@ body {
 }
 
 .pan-slider {
-    margin: 0 auto;
+    /*margin: 0 auto;*/
     appearance: none;
     z-index: 10;
     cursor: pointer;
@@ -765,6 +764,8 @@ body {
     text-align: center;
 }
 
+
+
 .text-left {
     text-align: left;
 }
@@ -795,6 +796,10 @@ body {
     margin: 10px;
 }
 
+.m-auto {
+    margin: auto;
+}
+
 
 .no-touch-scrolling {
     touch-action: none;
@@ -802,4 +807,8 @@ body {
 
 .opacity-50 {
     opacity: 0.5;
+}
+
+.opacity-0 {
+    opacity: 0;
 }

@@ -3,6 +3,7 @@
 import {
     clearProgress,
     createProgress,
+    updateOverallProgress,
     updateProgress
 } from "./progressBars.js";
 
@@ -11,7 +12,7 @@ export const progresses = new Map();
 export let overallProgress = 0;
 export let abortController = null;
 
-const THROTTLE_WINDOW_MS = 250;
+const THROTTLE_MS = 250;
 
 /**
  * Orchestrates the full UI creation, track download lifecycle management,
@@ -21,6 +22,7 @@ export async function loadBuffersAndUpdateProgressBars(song, strips, onProgressC
     terminateActiveTransfers();
 
     initializeProgressTrackingState(song);
+
     renderInitialUIStructure(song, strips);
 
     if (song.isLoaded) {
@@ -80,16 +82,23 @@ function renderInitialUIStructure(song, strips) {
         const track = song.tracks[index];
         if (track && track.buffer) {
             updateProgress(index, 1, "READY");
+        } else if (index === song.numTracks) {
+            console.log(song.numTracks)
+            updateOverallProgress();
         } else {
             updateProgress(index, 0, "PENDING");
         }
     });
+
+
 }
 
 function syncUIOnPipelineFailure(song) {
     song.tracks.forEach((track, index) => {
         if (track.buffer) {
             updateProgress(index, 1, "READY");
+        } else if (index === song.numTracks) {
+            updateOverallProgress()
         } else {
             updateProgress(index, 0, "PENDING");
         }
@@ -114,8 +123,11 @@ async function runConcurrentDownloads(song, signal, onProgressCallback) {
         processSingleTrackLifecycle(track, index, signal, onProgressCallback)
     );
 
+
+
     await Promise.all(workers);
     assertSignalLiveness(signal);
+    updateOverallProgress("READY")
 
     //  hold READY state before UI transitions / song activation
     try {
@@ -129,7 +141,7 @@ async function runConcurrentDownloads(song, signal, onProgressCallback) {
 function finalizeSongCompilation(song) {
     song.isLoaded = true;
     song.calculateMaxDuration();
-    console.log(`All buffers synchronized for: ${song.title}`);
+    // console.log(`All buffers synchronized for: ${song.title}`);
 }
 
 function handleGlobalPipelineFailure(song, error) {
@@ -147,6 +159,7 @@ function handleGlobalPipelineFailure(song, error) {
    ========================================== */
 
 async function processSingleTrackLifecycle(track, trackIndex, signal, onProgressCallback) {
+
     if (track.buffer) {
         broadcastTrackProgress(track, trackIndex, 1, "READY", onProgressCallback);
         return;
@@ -202,8 +215,8 @@ async function readStreamLoop(reader, track, trackIndex, totalSize, signal, onPr
         const dynamicRatio = totalSize ? processedBytes / totalSize : 0;
         const invocationTime = performance.now();
 
-        if (invocationTime - lastThrottledTime >= THROTTLE_WINDOW_MS || dynamicRatio === 1) {
-            broadcastTrackProgress(track, trackIndex, dynamicRatio, "DOWNLOADING", onProgressCallback);
+        if (invocationTime - lastThrottledTime >= THROTTLE_MS || dynamicRatio === 1) {
+            broadcastTrackProgress(track, trackIndex, dynamicRatio, "LOADING", onProgressCallback);
             lastThrottledTime = invocationTime;
         }
     }
@@ -215,7 +228,7 @@ async function readStreamLoop(reader, track, trackIndex, totalSize, signal, onPr
    ========================================== */
 
 async function decodeRawAudioData(rawBytes, track, trackIndex, onProgressCallback) {
-    broadcastTrackProgress(track, trackIndex, 0.99, "DECODING", onProgressCallback);
+    broadcastTrackProgress(track, trackIndex, 1, "DECODING", onProgressCallback);
 
     const audioContext = Tone.getContext().rawContext;
     const nativeAudioBuffer = await audioContext.decodeAudioData(rawBytes.buffer);
@@ -248,6 +261,7 @@ function broadcastTrackProgress(track, trackIndex, trackValue, phase, outputCall
 
     // Direct, local UI synchronization bypasses any external callback bugs
     updateProgress(trackIndex, trackValue, phase);
+    updateOverallProgress();
 
     // Also fire the external callback safely using track parameters for any global headers
     outputCallback?.(track.id, trackValue, overallProgress, phase);

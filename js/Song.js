@@ -9,14 +9,14 @@ import {Track} from "./Track.js";
 const DEFAULT_TIME_SIGNATURE = [4,4];
 const DEFAULT_START_BAR = 1;
 
-const DEFAULT_MASTER_GAIN = 1;
+const DEFAULT_MASTER_GAIN = 0.5;
 
 
 // song database specifications
 const SONG_DATABASE_DIR = 'songs';
 const SONG_CONFIG_JSON = 'config.json';
 
-// global song list, <songID,song>
+// global song list, <songId,song>
 export let songs = new Map();
 
 export class Song {
@@ -28,7 +28,6 @@ export class Song {
      * @param songConfig JSON file containing the config
      */
     constructor(songConfig) {
-
 
         this.id = songConfig.id;
         // Automatically register this newly created instance into the global map
@@ -67,8 +66,8 @@ export class Song {
 
         this.tracks = []
         this.createTracks();
-
         this.numTracks=songConfig.tracks.length;
+
 
         // store duration of song, i.e., it is the duration of the longest track in case of duration mismatch
         this.duration = 0;
@@ -105,16 +104,16 @@ export class Song {
     }
 
 
-    connect(){
+    connect(destination){
         Tone.Transport.cancel();
         this.tracks.forEach((track) => {
-            track.connect();
+            track.connect(destination);
         })
     }
 
     disconnect() {
             this.tracks.forEach( (track) => {
-                track.disconnect();
+                track.dispose();
             })
     }
 
@@ -124,6 +123,7 @@ export class Song {
         });
 
     }
+
 
 
 

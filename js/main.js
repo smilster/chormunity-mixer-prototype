@@ -12,14 +12,19 @@ import {updatePositionDisplay} from "./transportDisplays.js";
 
 import {resetBPMControls} from "./bpmControls.js";
 import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
+import {Master} from "./Master.js";
 
 //  global transport propertie
 //
+
+
 Tone.getContext().rawContext.sampleRate
 
 Tone.context._latencyHint = "playback";
 Tone.context._lookAhead = 0.06;
 Tone.context.updateInterval = 0.03
+
+
 // Tone.getTransport().PPQ = 196; // pulse per quarter note, better keep unchanged
 
 
@@ -28,6 +33,7 @@ await Song.fromSongDatabase("dontStop")
 await Song.fromSongDatabase("baraye")
 await Song.fromSongDatabase("schief")
 await Song.fromSongDatabase("hans")
+await Song.fromSongDatabase("click-4-4")
 
 export let activeSong = null;
 export let playbackRate = 1;
@@ -43,32 +49,33 @@ function createFlexGap(){
     return flexGap;
 }
 
-function initializeLayout(parentDivID) {
+function initializeLayout(parentDivId) {
 
     // choir-mixer div as defined in html
-    const choirMixerContainer = document.getElementById(parentDivID);
-    choirMixerContainer.className = "flex-column center w-100 minh-1vw";
+    const choirMixerContainer = document.getElementById(parentDivId);
+    choirMixerContainer.className = "flex-column w-100 minh-1vw";
+    choirMixerContainer.style.alignItems = "center";
 
 
 
-
-    choirMixerContainer.appendChild(createFlexGap());
+    // choirMixerContainer.appendChild(createFlexGap());
     choirMixerContainer.appendChild(createTableSongSelector());
-    choirMixerContainer.appendChild(createFlexGap());
+    // choirMixerContainer.appendChild(createFlexGap());
 
     return  choirMixerContainer;
 }
 
-export async function selectSong(songID, onProgress) {
+export async function selectSong(songId, onProgress) {
     // If selected song is identical with active Song, do nothing
-    if (activeSong && songs.get(songID) === activeSong) return;
+    if (activeSong && songs.get(songId) === activeSong) return;
 
     transportControls.style.display = "none";
     timelineControls.style.display = 'none';
 
     // if there is no active song, this is the first time song select is called
-    // create empty Mixer and empty transport
+    // create empty Mixer and empty transport. consider moving this to own method initializeChoirMixer()
     if (!activeSong) {
+        Master.connect(Tone.Destination);
         choirMixerContainer.prepend(createTransportControls())
         choirMixerContainer.prepend(createTimelineControls())
         choirMixerContainer.prepend(createMixer())
@@ -78,18 +85,14 @@ export async function selectSong(songID, onProgress) {
     // If there's an active song currently cancel everything it first!
     if (activeSong) {
         cancelLoading();
-
-
         activeSong.disconnect(); // Ensure dispose cleans up references
-
         transportStop();
-
     }
 
     // Now set activeSong
 
     resetLoop();
-    activeSong = songs.get(songID);
+    activeSong = songs.get(songId);
     highlightActiveSong(activeSong); // update song selector
 
 
@@ -117,10 +120,13 @@ export async function selectSong(songID, onProgress) {
 }
 
 function finalizeControls() {
+    activeSong.connect(Master.bus);
+
+
     configureTransport();
-    activeSong.connect();
     configureTimeLine();
     resetBPMControls();
+
     createTrackControls(activeSong);
     transportControls.style.display = "";
     timelineControls.style.display = "";
@@ -170,9 +176,9 @@ export function updateTempo(newPlaybackRate) {
 
 async function selectSongFromUrlParameter() {
     const params = new URLSearchParams(window.location.search);
-    const songID = params.get("song");
-    if (songID && songs.get(songID)) {
-        await selectSong(songID)
+    const songId = params.get("song");
+    if (songId && songs.get(songId)) {
+        await selectSong(songId)
     }
 }
 
@@ -181,3 +187,5 @@ updateFastUI();
 updateSlowUI();
 
 await selectSongFromUrlParameter();
+
+selectSong("click-4-4")

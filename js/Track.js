@@ -49,7 +49,7 @@ export class Track {
     }
 
 
-    connect() {
+    connect(destination) {
 
         if (this.state === "connected") return;
 
@@ -91,7 +91,7 @@ export class Track {
         this.volume.connect(this.panner);
         this.volume.connect(this.meter);
 
-        this.panner.toDestination();
+        this.panner.connect(destination);
 
 
         this.state = "connected";
@@ -102,7 +102,7 @@ export class Track {
      * Permanent cleanup.
      * Call when switching songs and abandoning Track.
      */
-    disconnect() {
+    dispose() {
 
         if (this.state !== "connected") return;
 
@@ -165,6 +165,27 @@ export class Track {
         }
 
         return String(trackConfig.id);
+    }
+
+    setPan(pan,transitionTime = 0.03){
+        this.pan = pan;
+        this.panner.pan.rampTo(parseFloat(pan),transitionTime);
+    }
+
+    setVol(vol,transitionTime = 0.03){
+        this.vol = vol;
+        if (!this.volume.mute){
+            this.volume.volume.rampTo(parseFloat(vol),transitionTime);
+        }
+    }
+
+    setMute(){
+        this.volume.mute = true;
+    }
+
+    setUnmute(){
+        this.volume.mute = false
+        this.setVol(this.vol);
     }
 
 

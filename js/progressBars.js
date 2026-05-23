@@ -1,7 +1,13 @@
 // progressBars.js
 
+
+import {overallProgress} from "./audioBuffer.js";
+import {activeSong} from "./main.js";
+
 /** @type {Object<number, {progressBar: HTMLElement, label: HTMLElement}>} */
 let progressCache = {};
+
+
 
 export function clearProgress() {
     progressCache = {};
@@ -40,6 +46,14 @@ export function updateProgress(channelId, progressValue, stateString) {
     updateUIStyles(cachedElements, progressValue, stateString);
 }
 
+export function updateOverallProgress(stateString = "MASTER") {
+    const masterElements = progressCache[activeSong.numTracks];
+    if (!masterElements) return;
+    updateLabelText(activeSong.numTracks, "LOADING");
+    updateUIStyles(masterElements, overallProgress,stateString);
+
+}
+
 function updateLabelText(channelId, text) {
     const cached = progressCache[channelId];
     if (cached && cached.label.innerText !== text) {
@@ -51,7 +65,13 @@ function updateUIStyles(elements, progress, state) {
     const { progressBar, label } = elements;
 
     switch (state) {
-        case "DOWNLOADING":
+        case "MASTER":
+            progressBar.style.transform = `scaleY(${progress})`;
+            setClasses(progressBar, ["bg-bright", "shadow-bright"], ["bg-green", "shadow-green", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
+            setClasses(label, ["bright"], ["gray", "green", "blue", "red"]);
+            break;
+
+        case "LOADING":
             progressBar.style.transform = `scaleY(${progress})`;
             setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
             setClasses(label, ["green"], ["gray", "bright", "blue", "red"]);
