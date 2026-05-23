@@ -49,7 +49,11 @@ export function updateProgress(channelId, progressValue, stateString) {
 export function updateOverallProgress(stateString = "MASTER") {
     const masterElements = progressCache[activeSong.numTracks];
     if (!masterElements) return;
-    updateLabelText(activeSong.numTracks, "LOADING");
+    if (overallProgress === 1) {
+        updateLabelText(activeSong.numTracks, "READY");
+    } else {
+        updateLabelText(activeSong.numTracks, "LOADING");
+    }
     updateUIStyles(masterElements, overallProgress,stateString);
 
 }

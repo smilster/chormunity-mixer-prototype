@@ -1,6 +1,6 @@
 {
     "title": "Baraye",
-    "bpm": 120,
+    "bpm": 108,
     "tracks": [
       { "filename": "s1.mp3", "pan": -0.4 },
       { "filename": "s2.mp3", "pan": -0.3 },

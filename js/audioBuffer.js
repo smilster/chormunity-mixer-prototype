@@ -12,7 +12,7 @@ export const progresses = new Map();
 export let overallProgress = 0;
 export let abortController = null;
 
-const THROTTLE_MS = 250;
+const THROTTLE_MS = 200;
 
 /**
  * Orchestrates the full UI creation, track download lifecycle management,
@@ -83,7 +83,6 @@ function renderInitialUIStructure(song, strips) {
         if (track && track.buffer) {
             updateProgress(index, 1, "READY");
         } else if (index === song.numTracks) {
-            console.log(song.numTracks)
             updateOverallProgress();
         } else {
             updateProgress(index, 0, "PENDING");

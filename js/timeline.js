@@ -18,7 +18,7 @@ let duration = 120;
 let isPointerDown = false;
 let startX = 0;
 let startPos = 0;
-const dragThreshold = 8; // Pixels of movement required to count as a drag
+const dragThreshold = 5; // Pixels of movement required to count as a drag
 
 // Your exported range variables
 export let loopRelativePositionStart = null;
@@ -197,11 +197,13 @@ function addTimelineEventListeners() {
         }
         if (!isPointerDown) return;
         isPointerDown = false;
+
         timeline.releasePointerCapture(event.pointerId);
 
-        const deltaX = Math.abs(event.clientX - startX);
 
-        if (deltaX < dragThreshold) {
+
+        const deltaX = Math.abs(event.clientX - startX);
+        if (deltaX < dragThreshold || Math.round(1000 * loopRelativePositionEnd) === Math.round(1000 * loopRelativePositionStart) )  {
             resetLoop()
             Tone.getTransport().seconds = Tone.Time(duration * calculateRelativePosition(event)).quantize(quantization);
         } else {
@@ -226,7 +228,6 @@ export function resetLoop() {
     loopStartLabel.style.display = "none"
     loopEndLabel.style.display = "none";
 
-    Tone.getTransport().seconds = 0;
     Tone.getTransport().loopStart = 0;
     Tone.getTransport().loopEnd = duration;
 }

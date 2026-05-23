@@ -91,8 +91,10 @@ export async function selectSong(songId, onProgress) {
 
     // Now set activeSong
 
-    resetLoop();
+
     activeSong = songs.get(songId);
+    resetLoop();
+    configureTransport();
     highlightActiveSong(activeSong); // update song selector
 
 
@@ -121,7 +123,6 @@ export async function selectSong(songId, onProgress) {
 
 function finalizeControls() {
     activeSong.connect(Master.bus);
-
 
     configureTransport();
     configureTimeLine();
@@ -187,5 +188,4 @@ updateFastUI();
 updateSlowUI();
 
 await selectSongFromUrlParameter();
-
-selectSong("click-4-4")
+await selectSong("click-4-4")

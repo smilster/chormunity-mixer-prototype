@@ -1,4 +1,5 @@
 import {Master} from "./Master.js";
+import {activeSong} from "./main.js";
 
 
 let mixer;
@@ -15,6 +16,10 @@ const DB_RANGE_VOLUME = DB_MAX_VOLUME - DB_MIN_VOLUME;
 const DB_MIN_METER = -50;
 const DB_MAX_METER = 0;
 const DB_RANGE_METER = DB_MAX_METER - DB_MIN_METER;
+
+const DB_MIN_MASTER_METER = DB_MIN_METER - 12;
+const DB_MAX_MASTER_METER = 0;
+const DB_RANGE_MASTER_METER = DB_MAX_MASTER_METER - DB_MIN_MASTER_METER;
 
 export function createMixer() {
     mixer = document.createElement("div");
@@ -228,7 +233,9 @@ export function updateMeters(song){
 
 function updateMeter(meterValue,id){
     const db = meterValue;
-    const percentage = Math.pow(Math.max(Math.min( (db - DB_MIN_METER) / DB_RANGE_METER,1),0),0.5)
+    const dbMinMeter = activeSong && id === activeSong.numTracks ? DB_MIN_MASTER_METER: DB_MIN_METER;
+    const dbRangeMeter = activeSong && id === activeSong.numTracks ? DB_RANGE_MASTER_METER : DB_RANGE_METER;
+    const percentage = Math.pow(Math.max(Math.min( (db - dbMinMeter) / dbRangeMeter,1),0),0.5)
     if (meters[id]){
         meters[id].style.transform = `scaleY(${percentage})`;
         if (db < -12 ){
@@ -240,6 +247,11 @@ function updateMeter(meterValue,id){
         }
     }
 }
+
+
+////
+
+
 
 
 
