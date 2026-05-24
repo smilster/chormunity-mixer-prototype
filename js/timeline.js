@@ -218,7 +218,7 @@ function addTimelineEventListeners() {
 
 
 
-export function resetLoop() {
+export function resetLoop(seconds) {
     if (!activeSong) return;
     if (!activeSong.isLoaded) return;
 
@@ -230,6 +230,10 @@ export function resetLoop() {
 
     Tone.getTransport().loopStart = 0;
     Tone.getTransport().loopEnd = duration;
+
+    if (seconds || seconds === 0) {
+        Tone.getTransport().seconds = seconds;
+    }
 }
 
 window.addEventListener("resize", () => {

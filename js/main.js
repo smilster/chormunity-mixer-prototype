@@ -6,7 +6,7 @@ import {createTableSongSelector, highlightActiveSong} from "./songSelector.js";
 
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
-import {cancelLoading, loadBuffersAndUpdateProgressBars} from "./audioBuffer.js";
+import {cancelLoading, loadBuffersAndUpdateProgressBars,} from "./audioBuffer.js";
 import {resetLoop, configureTimeLine, updateTimelineMarker} from "./timeline.js";
 import {updatePositionDisplay} from "./transportDisplays.js";
 
@@ -14,40 +14,9 @@ import {resetBPMControls} from "./bpmControls.js";
 import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
 import {Master} from "./Master.js";
 
-//  global transport propertie
-//
-
-
-Tone.getContext().rawContext.sampleRate
-
-Tone.context._latencyHint = "playback";
-Tone.context._lookAhead = 0.06;
-Tone.context.updateInterval = 0.03
-
-
-// Tone.getTransport().PPQ = 196; // pulse per quarter note, better keep unchanged
-
-
-// load some songs from database (saved in 'songs' directory
-await Song.fromSongDatabase("dontStop")
-await Song.fromSongDatabase("baraye")
-await Song.fromSongDatabase("schief")
-await Song.fromSongDatabase("hans")
-await Song.fromSongDatabase("click-4-4")
-
-export let activeSong = null;
-export let playbackRate = 1;
 
 
 
-const   choirMixerContainer = initializeLayout('choir-mixer')
-
-
-function createFlexGap(){
-    const flexGap = document.createElement("div");
-    flexGap.id = "flex-grow";
-    return flexGap;
-}
 
 function initializeLayout(parentDivId) {
 
@@ -64,6 +33,8 @@ function initializeLayout(parentDivId) {
 
     return  choirMixerContainer;
 }
+
+
 
 export async function selectSong(songId, onProgress) {
     // If selected song is identical with active Song, do nothing
@@ -93,8 +64,6 @@ export async function selectSong(songId, onProgress) {
 
 
     activeSong = songs.get(songId);
-    resetLoop();
-    configureTransport();
     highlightActiveSong(activeSong); // update song selector
 
 
@@ -134,6 +103,11 @@ function finalizeControls() {
 
 }
 
+function configureTone(){
+    Tone.context._latencyHint = "playback";
+    Tone.context._lookAhead = 0.06;
+    Tone.context.updateInterval = 0.03
+}
 
 function configureTransport() {
     Tone.getTransport().bpm.value = activeSong.bpm;
@@ -183,9 +157,27 @@ async function selectSongFromUrlParameter() {
     }
 }
 
+
+
+
+// load some songs from database, saved in 'songs' directory
+await Song.fromSongDatabase("dontStop")
+await Song.fromSongDatabase("baraye")
+await Song.fromSongDatabase("schief")
+await Song.fromSongDatabase("hans")
+await Song.fromSongDatabase("click-4-4")
+
+export let activeSong = null;
+export let playbackRate = 1;
+
+
+
+const   choirMixerContainer = initializeLayout('choir-mixer')
+await selectSongFromUrlParameter();
+await selectSong("click-4-4")
+
 // start gui
 updateFastUI();
 updateSlowUI();
 
-await selectSongFromUrlParameter();
-await selectSong("click-4-4")
+

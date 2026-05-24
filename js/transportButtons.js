@@ -78,6 +78,5 @@ export function transportStop() {
     Tone.getTransport().pause();
     playButtonSymbol.classList.remove("pause-btn");
     playButtonSymbol.classList.add("play-btn");
-    resetLoop();
-    Tone.getTransport.seconds=0;
+    resetLoop(0);
 }
