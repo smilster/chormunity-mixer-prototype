@@ -2,6 +2,7 @@
 // DEFAULT CONFIGURATIONS
 // =====================================================
 import {Track} from "./Track.js";
+import {SongBuffer} from "./SongBuffer.js";
 
 // DEFAULT SONG CONFIG PARAMETERS, consider moving them into Song class
 
@@ -72,8 +73,10 @@ export class Song {
         // store duration of song, i.e., it is the duration of the longest track in case of duration mismatch
         this.duration = 0;
 
-        this.isLoaded = false;
 
+        this.isLoaded = false;
+        this.fileSize = null;
+        this.buffer = new SongBuffer(this);
 
     }
 
@@ -123,6 +126,39 @@ export class Song {
         });
 
     }
+
+
+
+    async getFileSize() {
+        if (this.fileSize) return this.fileSize;
+        // FIXED: Added 'return' inside map loop so it gathers the array of fetch promises
+        const sizePromises = this.tracks.map(track => {
+            return track.getFileSize();
+        });
+
+        // Wait for all of them to finish
+        const sizes = await Promise.all(sizePromises);
+
+
+        // Sum the array of byte sizes
+        this.fileSize = sizes.reduce((total, currentSize) => total + currentSize, 0);
+        return this.fileSize;
+    }
+
+    checkIfLoaded() {
+
+        let isLoaded = true;
+        this.tracks.forEach((track) => {
+            if (!track.buffer) {
+                isLoaded = false;
+            }
+        })
+
+        this.isLoaded = isLoaded;
+        return isLoaded;
+
+    }
+
 
 
 

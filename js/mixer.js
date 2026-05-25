@@ -160,6 +160,8 @@ function createVolumeControl(vol,setVol,id, isMaster = false) {
         volumeSlider.max = "1.5";
         volumeSlider.min = "0";
         volumeSlider.value = vol.toString();
+        setVol(vol);
+
         volumeSlider.addEventListener('input', (event) => {
             let vol = event.target.value;
             vol = Math.pow(vol,3);

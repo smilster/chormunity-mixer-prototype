@@ -75,44 +75,29 @@ async function updateSizeInBackground(song, displayElement) {
         return;
     }
 
-    const totalBytes = await getSongFilesize(song);
+    const totalBytes = await song.getFileSize();
 
     displayElement.innerText = formatBytesToMB(totalBytes);
     displayElement.classList.remove("italic", "gray-text"); // Remove the loading styles once ready
 }
 
-async function getSongFilesize(song) {
-    // FIXED: Added 'return' inside map loop so it gathers the array of fetch promises
-    const sizePromises = song.tracks.map(track => {
-        return getFileSize(track.url);
-    });
+// async function getSongFilesize(song) {
+//     // FIXED: Added 'return' inside map loop so it gathers the array of fetch promises
+//     const sizePromises = song.tracks.map(track => {
+//         return track.getFileSize();
+//     });
+//
+//     // Wait for all of them to finish
+//     const sizes = await Promise.all(sizePromises);
+//
+//
+//     // Sum the array of byte sizes
+//     const totalBytes = sizes.reduce((total, currentSize) => total + currentSize, 0);
+//
+//     return totalBytes;
+// }
 
-    // Wait for all of them to finish
-    const sizes = await Promise.all(sizePromises);
 
-    // Sum the array of byte sizes
-    const totalBytes = sizes.reduce((total, currentSize) => total + currentSize, 0);
-
-    return totalBytes;
-}
-
-async function getFileSize(url) {
-    try {
-        const response = await fetch(url, { method: 'HEAD' });
-
-        if (!response.ok) {
-            console.warn(`Could not fetch headers for ${url}`);
-            return 0;
-        }
-
-        const sizeInBytes = response.headers.get('content-length');
-        return sizeInBytes ? parseInt(sizeInBytes, 10) : 0;
-
-    } catch (error) {
-        console.error(`Network or CORS error fetching size for ${url}:`, error);
-        return 0;
-    }
-}
 
 function formatBytesToMB(bytes) {
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';

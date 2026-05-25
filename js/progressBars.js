@@ -1,23 +1,20 @@
-// progressBars.js
-
-
-import {overallProgress} from "./audioBuffer.js";
 import {activeSong} from "./main.js";
 
-/** @type {Object<number, {progressBar: HTMLElement, label: HTMLElement}>} */
+
 let progressCache = {};
-
-
 
 export function clearProgress() {
     progressCache = {};
 }
 
-export function createProgress(channelId, channelContent) {
-    if (progressCache[channelId]) {
-        updateLabelText(channelId, "PENDING");
-        return;
-    }
+
+export function visualizeProgress(channelContents) {
+
+    clearProgress()
+
+
+    channelContents.forEach((channelContent,channelId) => {
+
 
     channelContent.innerHTML = "";
 
@@ -28,82 +25,98 @@ export function createProgress(channelId, channelContent) {
     progressBar.className = "progress-bar w-100 h-100 bg-green shadow-green round";
 
     const label = document.createElement("div");
-    label.className = "label small gray color-transition";
+    label.className = "label small lighter-gray color-transition";
 
     fullProgressBar.appendChild(progressBar);
     channelContent.appendChild(fullProgressBar);
     channelContent.appendChild(label);
 
     progressCache[channelId] = { progressBar, label };
-    updateLabelText(channelId, "PENDING");
+    updateUIStyles(channelId, 0,"PENDING");
+
+})
+
+    updateProgress();
+
 }
 
-export function updateProgress(channelId, progressValue, stateString) {
-    const cachedElements = progressCache[channelId];
-    if (!cachedElements) return;
+export function updateProgress() {
+    const delay = 300;
+    const progresses = activeSong.buffer.getProgress();
+    console.log("Im running")
 
-    updateLabelText(channelId, stateString);
-    updateUIStyles(cachedElements, progressValue, stateString);
-}
+    if (progresses.length === 0) {
+        setTimeout(updateProgress, delay);
+        return;
+    }
 
-export function updateOverallProgress(stateString = "MASTER") {
-    const masterElements = progressCache[activeSong.numTracks];
-    if (!masterElements) return;
-    if (overallProgress === 1) {
-        updateLabelText(activeSong.numTracks, "READY");
+    // Extract the total status item (last element) and leave just the track elements
+    const masterId = progresses.length - 1;
+    const masterProgress = progresses[masterId];
+
+    // 1. Update individual track UI components safely
+    progresses.forEach((track, channelId) => {
+        updateUIStyles(channelId, track.progress, track.state);
+    });
+
+
+
+    // 3. Keep looping only if the entire download/decode session isn't finished
+    if (masterProgress.state !== "READY") {
+        setTimeout(updateProgress, delay);
     } else {
-        updateLabelText(activeSong.numTracks, "LOADING");
+        progresses.forEach((track, channelId) => {
+            updateUIStyles(channelId, track.progress, track.state);
+        });
     }
-    updateUIStyles(masterElements, overallProgress,stateString);
 
 }
 
-function updateLabelText(channelId, text) {
-    const cached = progressCache[channelId];
-    if (cached && cached.label.innerText !== text) {
-        cached.label.innerText = text;
-    }
-}
 
-function updateUIStyles(elements, progress, state) {
-    const { progressBar, label } = elements;
+function updateUIStyles(channelId,progress, state) {
+    if (!progressCache[channelId]) return;
+
+    const { progressBar, label } = progressCache[channelId]
+
+    label.innerText = state;
 
     switch (state) {
         case "MASTER":
+            label.innerText = "LOADING";
             progressBar.style.transform = `scaleY(${progress})`;
             setClasses(progressBar, ["bg-bright", "shadow-bright"], ["bg-green", "shadow-green", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
-            setClasses(label, ["bright"], ["gray", "green", "blue", "red"]);
+            setClasses(label, ["bright"], ["lighter-gray", "green", "blue", "red"]);
             break;
 
         case "LOADING":
             progressBar.style.transform = `scaleY(${progress})`;
             setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
-            setClasses(label, ["green"], ["gray", "bright", "blue", "red"]);
+            setClasses(label, ["green"], ["lighter-gray", "bright", "blue", "red"]);
             break;
 
         case "DECODING":
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-bright", "shadow-bright"], ["bg-green", "shadow-green", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
-            setClasses(label, ["bright"], ["green", "gray", "blue", "red"]);
+            setClasses(label, ["bright"], ["green", "lighter-gray", "blue", "red"]);
             break;
 
         case "READY":
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-blue", "shadow-blue"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-red", "shadow-red"]);
-            setClasses(label, ["blue"], ["green", "gray", "bright", "red"]);
+            setClasses(label, ["blue"], ["green", "lighter-gray", "bright", "red"]);
             break;
 
         case "ERROR":
             progressBar.style.transform = "scaleY(1)";
             setClasses(progressBar, ["bg-red", "shadow-red"], ["bg-green", "shadow-green", "bg-bright", "shadow-bright", "bg-blue", "shadow-blue"]);
-            setClasses(label, ["red"], ["green", "gray", "bright", "blue"]);
+            setClasses(label, ["red"], ["green", "lighter-gray", "bright", "blue"]);
             break;
 
         case "PENDING":
         default:
             progressBar.style.transform = "scaleY(0)";
             setClasses(progressBar, ["bg-green", "shadow-green"], ["bg-bright", "shadow-bright", "bg-blue", "shadow-blue", "bg-red", "shadow-red"]);
-            setClasses(label, ["gray"], ["green", "bright", "blue", "red"]);
+            setClasses(label, ["lighter-gray"], ["green", "bright", "blue", "red"]);
             break;
     }
 }

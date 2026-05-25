@@ -11,9 +11,13 @@ export class Track {
 
     constructor(trackConfig) {
 
+
         this.id = trackConfig.id;
+        this.songId = trackConfig.songId;
 
         this.url = this.genUrl(trackConfig);
+        this.fileSize = null; // to be set by this.getFileSize;
+
         this.label = this.genLabel(trackConfig);
 
         // playback params
@@ -39,10 +43,6 @@ export class Track {
         this.meter = new Tone.Meter({
             smoothing: 0.2
         });
-
-
-
-
 
 
         this.state = "initialized";
@@ -187,6 +187,30 @@ export class Track {
         this.volume.mute = false
         this.setVol(this.vol);
     }
+
+    async getFileSize(){
+        if (this.fileSize) return this.fileSize;
+        if (!this.url) return null; // cancel if no url exists
+
+        try {
+            const response = await fetch(this.url, { method: 'HEAD' });
+
+            if (!response.ok) {
+                console.warn(`Could not fetch headers for ${this.url}`);
+                return null;
+            }
+
+            const sizeInBytes = response.headers.get('content-length');
+            this.fileSize = sizeInBytes ? parseInt(sizeInBytes, 10) : 0;
+            return this.fileSize;
+
+        } catch (error) {
+            console.error(`Network or CORS error fetching size for ${this.url}:`, error);
+            return null;
+        }
+
+    }
+
 
 
 

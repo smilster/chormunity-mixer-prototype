@@ -6,13 +6,13 @@ import {createTableSongSelector, highlightActiveSong} from "./songSelector.js";
 
 import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
 import {transportStop} from "./transportButtons.js";
-import {cancelLoading, loadBuffersAndUpdateProgressBars,} from "./audioBuffer.js";
-import {resetLoop, configureTimeLine, updateTimelineMarker} from "./timeline.js";
+import { configureTimeLine, updateTimelineMarker} from "./timeline.js";
 import {updatePositionDisplay} from "./transportDisplays.js";
 
 import {resetBPMControls} from "./bpmControls.js";
 import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
 import {Master} from "./Master.js";
+import {visualizeProgress} from "./progressBars.js";
 
 
 
@@ -55,20 +55,20 @@ export async function selectSong(songId, onProgress) {
 
     // If there's an active song currently cancel everything it first!
     if (activeSong) {
-        cancelLoading();
+        activeSong.buffer.clearLoading();
         activeSong.disconnect(); // Ensure dispose cleans up references
         transportStop();
     }
 
     // Now set activeSong
-
-
     activeSong = songs.get(songId);
     highlightActiveSong(activeSong); // update song selector
 
 
+
     // Initialize UI mixer elements
-    const strips = initializeMixer(activeSong);
+    const channelContents = initializeMixer(activeSong);
+
 
     if (activeSong.isLoaded === true) {
         finalizeControls()
@@ -77,10 +77,16 @@ export async function selectSong(songId, onProgress) {
 
     // Safely manage the loading pipeline
     try {
-        await loadBuffersAndUpdateProgressBars(activeSong, strips, onProgress);
+        visualizeProgress(channelContents);
+        await activeSong.buffer.load();
+
+        if (activeSong.checkIfLoaded()) {
+            activeSong.calculateMaxDuration();
+            setTimeout(finalizeControls,1000)
+        }
+
 
         // This ONLY runs if loadSongBuffers successfully finishes without being aborted
-        finalizeControls()
     } catch (error) {
         if (error.name === 'AbortError') {
             console.log("Previous song loading successfully aborted. Stopping setup lifecycle.");
@@ -126,6 +132,7 @@ function updateSlowUI() {
         updatePositionDisplay();
         // updateTimeDisplay()
     }
+
     setTimeout(updateSlowUI, 80);
 }
 
@@ -173,11 +180,17 @@ export let playbackRate = 1;
 
 
 const   choirMixerContainer = initializeLayout('choir-mixer')
-await selectSongFromUrlParameter();
-await selectSong("click-4-4")
-
 // start gui
 updateFastUI();
 updateSlowUI();
+
+
+// await selectSongFromUrlParameter();
+// await selectSong("click-4-4")
+
+
+
+
+
 
 
