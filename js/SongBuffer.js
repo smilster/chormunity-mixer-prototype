@@ -12,7 +12,6 @@ export class SongBuffer {
     constructor(song) {
         this.song = song;
         this.tracks = song.tracks;
-
     }
 
     clearLoading() {
@@ -30,8 +29,8 @@ export class SongBuffer {
 
 
     async load() {
-        this.clearLoading();
         if (this.song.isLoaded) return;
+        this.clearLoading();
 
         this.abortController = new AbortController();
 
@@ -47,15 +46,25 @@ export class SongBuffer {
             this.song.checkIfLoaded();
 
 
+
+
         } catch (error) {
-            if (error.name !== 'AbortError') console.error("Unexpected error:", error);
+            if (error.name !== 'AbortError') {
+                console.error("Unexpected error:", error);
+            } else {
+                throw error;
+            }
+
         } finally {
             // Target only this specific song so you don't ruin newer parallel runs
-            this.abortController = null;
+
         }
     }
 
     async downloadTrack(track, signal) {
+        if (signal.aborted) return;
+
+        // already cached
         if (track.buffer) {
             this.progresses.set(track.url, { progress: 1, state: "READY" });
             await track.getFileSize();
@@ -63,32 +72,66 @@ export class SongBuffer {
             return track.buffer;
         }
 
-        const response = await fetch(track.url, { signal });
-        const reader = response.body.getReader();
-        const chunks = [];
-        let loadedBytes = 0;
+        let response;
+        let reader;
 
         try {
+            response = await fetch(track.url, { signal });
+
+            if (signal.aborted) return;
+
+            reader = response.body.getReader();
+
+            const chunks = [];
+            let loadedBytes = 0;
+
             while (true) {
+                if (signal.aborted) break;
+
                 const { done, value } = await reader.read();
+
+                if (signal.aborted) break;
                 if (done) break;
 
                 chunks.push(value);
-                loadedBytes += value.length;
-                this.loadedTotalBytes += value.length;
-                this.progresses.set(track.url, { progress: loadedBytes / track.fileSize, state: "LOADING" });
+
+                const chunkSize = value.length;
+                loadedBytes += chunkSize;
+                this.loadedTotalBytes += chunkSize;
+
+                // guard state update AFTER abort check
+                if (!signal.aborted) {
+                    this.progresses.set(track.url, {
+                        progress: loadedBytes / track.fileSize,
+                        state: "LOADING"
+                    });
+                }
             }
+
+            if (signal.aborted) return;
 
             if (loadedBytes === track.fileSize) {
                 this.progresses.set(track.url, { progress: 1, state: "DECODING" });
-                console.log(track.url + "decoding")
-                track.buffer = await this.createBuffer(chunks);
-                console.log(track.url + "ready")
-                this.progresses.set(track.url, { progress: 1, state: "READY" });
 
+                track.buffer = await this.createBuffer(chunks);
+
+                if (!signal.aborted) {
+                    this.progresses.set(track.url, { progress: 1, state: "READY" });
+                }
+            }
+
+            return track.buffer;
+
+        } catch (err) {
+            if (err.name !== "AbortError") {
+                console.error("Download error:", err);
             }
         } finally {
-            reader.releaseLock();
+            if (reader) {
+                try {
+                    reader.releaseLock();
+                } catch (_) {}
+            }
         }
     }
 
@@ -117,5 +160,11 @@ export class SongBuffer {
         });
         return arr;
     }
+
+
+
+
+
+
 
 }

@@ -4,7 +4,9 @@
 import {Song, songs} from "./Song.js";
 import {createTableSongSelector, highlightActiveSong} from "./songSelector.js";
 
-import {createMixer, createTrackControls, initializeMixer, updateMeters} from "./mixer.js";
+
+import {Mixer} from "./Mixer.js";
+
 import {transportStop} from "./transportButtons.js";
 import { configureTimeLine, updateTimelineMarker} from "./timeline.js";
 import {updatePositionDisplay} from "./transportDisplays.js";
@@ -12,7 +14,6 @@ import {updatePositionDisplay} from "./transportDisplays.js";
 import {resetBPMControls} from "./bpmControls.js";
 import {timelineControls, transportControls, createTransportControls, createTimelineControls} from "./controlPanels.js";
 import {Master} from "./Master.js";
-import {visualizeProgress} from "./progressBars.js";
 
 
 
@@ -46,10 +47,11 @@ export async function selectSong(songId, onProgress) {
     // if there is no active song, this is the first time song select is called
     // create empty Mixer and empty transport. consider moving this to own method initializeChoirMixer()
     if (!activeSong) {
+        configureTone();
         Master.connect(Tone.Destination);
         choirMixerContainer.prepend(createTransportControls())
         choirMixerContainer.prepend(createTimelineControls())
-        choirMixerContainer.prepend(createMixer())
+        choirMixerContainer.prepend(Mixer.create())
     }
 
 
@@ -62,12 +64,8 @@ export async function selectSong(songId, onProgress) {
 
     // Now set activeSong
     activeSong = songs.get(songId);
+    const mixer = Mixer.get(activeSong);
     highlightActiveSong(activeSong); // update song selector
-
-
-
-    // Initialize UI mixer elements
-    const channelContents = initializeMixer(activeSong);
 
 
     if (activeSong.isLoaded === true) {
@@ -77,19 +75,26 @@ export async function selectSong(songId, onProgress) {
 
     // Safely manage the loading pipeline
     try {
-        visualizeProgress(channelContents);
+        const song = activeSong;
+        mixer.progress.show();
+
         await activeSong.buffer.load();
 
-        if (activeSong.checkIfLoaded()) {
-            activeSong.calculateMaxDuration();
-            setTimeout(finalizeControls,1000)
-        }
+        setTimeout(()=>{
+            if (song === activeSong) {
+                activeSong.calculateMaxDuration();
+                finalizeControls();
+            }
+        },700)
+
+
+
 
 
         // This ONLY runs if loadSongBuffers successfully finishes without being aborted
     } catch (error) {
         if (error.name === 'AbortError') {
-            console.log("Previous song loading successfully aborted. Stopping setup lifecycle.");
+            console.log("Song loading aborted by user.");
         } else {
             console.error("Failed to load song due to a critical error:", error);
         }
@@ -103,7 +108,7 @@ function finalizeControls() {
     configureTimeLine();
     resetBPMControls();
 
-    createTrackControls(activeSong);
+    Mixer.get(activeSong).createTrackControls();
     transportControls.style.display = "";
     timelineControls.style.display = "";
 
@@ -138,7 +143,7 @@ function updateSlowUI() {
 
 function updateFastUI() {
     if (activeSong && activeSong.isLoaded) {
-        updateMeters(activeSong)
+        // Mixer.updateMeters()
     }
 
     requestAnimationFrame(updateFastUI);
@@ -186,7 +191,7 @@ updateSlowUI();
 
 
 // await selectSongFromUrlParameter();
-// await selectSong("click-4-4")
+await selectSong("click-4-4")
 
 
 

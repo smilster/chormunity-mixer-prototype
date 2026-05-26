@@ -335,9 +335,11 @@ body {
 }
 
 .progress-bar {
+    z-index: 10;
+    will-change: transform;
     transform-origin: bottom;
     transform: scaleY(0);
-    transition: transform 0.3s linear, background-color 0.1s linear;
+    transition: transform 0.3s linear, background-color 0.3s linear;
     /* Cross-browser hardware acceleration */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -607,7 +609,7 @@ body {
 }
 
 .color-transition {
-    transition: color 0.1s linear, background-color 0.1s linear;
+    transition: color 0.3s linear, background-color 0.1s linear;
 }
 
 .maxw-1200px {
