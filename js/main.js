@@ -142,7 +142,7 @@ function updateSlowUI() {
 
 function updateFastUI() {
     if (activeSong && activeSong.isLoaded) {
-        // Mixer.updateMeters()
+        Mixer.updateMeters()
     }
 
     requestAnimationFrame(updateFastUI);
