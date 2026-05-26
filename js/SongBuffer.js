@@ -45,7 +45,7 @@ export class SongBuffer {
 
             this.song.checkIfLoaded();
 
-
+            if(this.song.isLoaded) this.song.calculateMaxDuration();
 
 
         } catch (error) {

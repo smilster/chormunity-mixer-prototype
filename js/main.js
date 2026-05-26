@@ -82,7 +82,6 @@ export async function selectSong(songId, onProgress) {
 
         setTimeout(()=>{
             if (song === activeSong) {
-                activeSong.calculateMaxDuration();
                 finalizeControls();
             }
         },700)
